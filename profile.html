@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Profile — PWD Travel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#0b0d11;--bg2:#111318;--card:#13151c;
+      --accent:#00d4e8;--accent2:#00b5c8;
+      --text:#ffffff;--text2:#a0a8b8;--text3:#6b7280;
+      --border:rgba(255,255,255,0.07);
+      --sidebar-width:64px;--sidebar-open:220px;
+    }
+    html,body{height:100%;width:100%;overflow:hidden;font-family:Inter,sans-serif;background:var(--bg);color:var(--text);}
+    .app{display:flex;height:100vh;width:100vw;}
+
+    /* ── SIDEBAR (same as home) ── */
+    .sidebar{width:var(--sidebar-width);height:100%;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 0;z-index:500;transition:width .3s cubic-bezier(.4,0,.2,1);overflow:hidden;flex-shrink:0;}
+    .sidebar.open{width:var(--sidebar-open);align-items:flex-start;}
+    .sidebar-toggle{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;border-radius:10px;margin-bottom:24px;transition:background .2s,color .2s;flex-shrink:0;margin-left:12px;}
+    .sidebar-toggle:hover{background:rgba(255,255,255,.05);color:var(--accent);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 12px;margin-bottom:28px;text-decoration:none;overflow:hidden;white-space:nowrap;}
+    .sidebar-logo .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#000;}
+    .sidebar-logo .logo-text{font-weight:800;font-size:15px;color:var(--text);opacity:0;transition:opacity .2s;white-space:nowrap;}
+    .sidebar-logo .logo-text b{color:var(--accent);}
+    .sidebar.open .sidebar-logo .logo-text{opacity:1;}
+    .sidebar-nav{display:flex;flex-direction:column;gap:4px;width:100%;padding:0 10px;flex:1;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;text-decoration:none;color:var(--text2);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;transition:background .2s,color .2s;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:inherit;}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+    .nav-item.active{background:rgba(0,212,232,.1);color:var(--accent);}
+    .nav-item i{font-size:16px;flex-shrink:0;width:20px;text-align:center;}
+    .nav-label{opacity:0;transition:opacity .2s;pointer-events:none;}
+    .sidebar.open .nav-label{opacity:1;}
+    .sidebar-bottom{padding:0 10px;width:100%;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;}
+    .profile-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;overflow:hidden;white-space:nowrap;transition:background .2s;}
+    .profile-item:hover{background:rgba(255,255,255,.05);}
+    .profile-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+    .profile-info{opacity:0;transition:opacity .2s;}
+    .sidebar.open .profile-info{opacity:1;}
+    .profile-name{font-size:13px;font-weight:600;color:var(--text);}
+    .profile-handle{font-size:11px;color:var(--text3);}
+
+    /* ── MAIN CONTENT ── */
+    .profile-main{flex:1;overflow-y:auto;padding:32px 28px;background:var(--bg);}
+    .profile-main::-webkit-scrollbar{width:6px;}
+    .profile-main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+    /* ── PAGE HEADER ── */
+    .pg-header{display:flex;align-items:center;gap:18px;margin-bottom:28px;}
+    .pg-back{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none;}
+    .pg-back:hover{border-color:var(--accent);color:var(--accent);}
+    .pg-title{font-size:22px;font-weight:800;color:var(--text);}
+    .pg-sub{font-size:13px;color:var(--text3);margin-top:2px;}
+
+    /* ── HERO CARD ── */
+    .hero-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px;display:flex;align-items:center;gap:22px;margin-bottom:22px;position:relative;overflow:hidden;}
+    .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#00c864);}
+    .hero-av-wrap{position:relative;flex-shrink:0;}
+    .hero-av{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#000;border:3px solid var(--accent);box-shadow:0 0 0 5px rgba(0,212,232,.12);}
+    .hero-av-cam{position:absolute;bottom:2px;right:2px;width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:12px;color:#000;cursor:pointer;transition:background .2s;}
+    .hero-av-cam:hover{background:var(--accent2);}
+    .hero-info{flex:1;}
+    .hero-name{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;}
+    .hero-handle{font-size:13px;color:var(--text3);margin-bottom:10px;}
+    .hero-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+    .vbadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 14px;border-radius:50px;cursor:pointer;transition:all .2s;}
+    .vbadge.verified{background:rgba(0,200,100,.1);color:#00c864;border:1px solid rgba(0,200,100,.3);}
+    .vbadge.unverified{background:rgba(255,160,0,.1);color:#ffa000;border:1px solid rgba(255,160,0,.3);}
+    .vbadge.pending{background:rgba(0,212,232,.08);color:var(--accent);border:1px solid rgba(0,212,232,.2);}
+    .cam-note{font-size:10px;color:var(--text3);}
+    .prog-wrap{margin-top:12px;}
+    .prog-bar{width:200px;height:6px;background:rgba(255,255,255,.07);border-radius:50px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--accent),#00c864);transition:width .4s;}
+    .prog-lbl{font-size:11px;color:var(--text3);margin-top:5px;}
+
+    /* ── GRID LAYOUT ── */
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+    @media(max-width:800px){.profile-grid{grid-template-columns:1fr;}}
+    .profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;}
+    .profile-card.full{grid-column:1/-1;}
+    .card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .card-title i{color:var(--accent);}
+
+    /* ── FIELDS ── */
+    .pp-field{margin-bottom:14px;}
+    .pp-field:last-child{margin-bottom:0;}
+    .pp-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+    .pp-field input,.pp-field select,.pp-field textarea{width:100%;padding:11px 13px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s;}
+    .pp-field input:focus,.pp-field select:focus,.pp-field textarea:focus{border-color:var(--accent);}
+    .pp-field input::placeholder,.pp-field textarea::placeholder{color:var(--text3);}
+    .pp-field select option{background:var(--card);}
+    .pp-field textarea{resize:vertical;min-height:70px;line-height:1.5;}
+    .pp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    /* ── SAVE BAR ── */
+    .save-bar{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;margin:0 -28px;z-index:10;}
+    .save-bar-left{font-size:12px;color:var(--text3);}
+    .save-bar-left span{color:#ffa000;}
+    .save-btn{display:flex;align-items:center;gap:8px;padding:12px 28px;background:var(--accent);border:none;border-radius:50px;color:#000;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s;}
+    .save-btn:hover{background:var(--accent2);}
+    .warn-bar{background:rgba(255,160,0,.08);border:1px solid rgba(255,160,0,.25);border-radius:10px;padding:11px 14px;font-size:12px;color:#ffa000;line-height:1.6;margin-bottom:18px;display:none;}
+    .warn-bar i{margin-right:6px;}
+
+    /* ── VERIFICATION MODAL ── */
+    .vm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:3000;padding:20px;}
+    .vm-overlay.open{display:flex;}
+    .vm-box{background:var(--bg2);border:1px solid rgba(0,212,232,.3);border-radius:24px;padding:32px 28px;max-width:360px;width:100%;text-align:center;box-shadow:0 32px 100px rgba(0,0,0,.7);}
+    .vm-icon{font-size:44px;margin-bottom:14px;}
+    .vm-box h3{font-size:18px;font-weight:800;color:#fff;margin-bottom:10px;}
+    .vm-box p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:22px;}
+    .vm-btns{display:flex;flex-direction:column;gap:9px;}
+    .vm-btns button{padding:12px;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;border:none;}
+    .vm-yes{background:#00c864;color:#000;}
+    .vm-pend{background:rgba(0,212,232,.1);border:1px solid rgba(0,212,232,.3)!important;color:var(--accent);}
+    .vm-no{background:transparent;border:1px solid var(--border)!important;color:var(--text2);}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <a class="sidebar-logo" href="home.html">
+      <div class="logo-icon">&#9992;</div>
+      <span class="logo-text"><b>PWD</b>TRAVEL</span>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-house"></i><span class="nav-label">Home</span></a>
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-bell"></i><span class="nav-label">Updates</span></a>
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-calendar-check"></i><span class="nav-label">Book a Ride</span></a>
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-cloud-sun"></i><span class="nav-label">Weather</span></a>
+      <a class="nav-item" href="home.html"><i class="fa-solid fa-headset"></i><span class="nav-label">Support</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="profile-item active" onclick="window.location='profile.html'">
+        <div class="profile-avatar" id="sidebarAvatar">U</div>
+        <div class="profile-info">
+          <div class="profile-name" id="sidebarName">Your Name</div>
+          <div class="profile-handle" id="sidebarHandle">@user.pwd</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="profile-main">
+
+    <!-- Page Header -->
+    <div class="pg-header">
+      <a class="pg-back" href="home.html" title="Back to Map"><i class="fa-solid fa-arrow-left"></i></a>
+      <div>
+        <div class="pg-title">My Profile</div>
+        <div class="pg-sub">Manage your personal info, disability details &amp; emergency contacts</div>
+      </div>
+    </div>
+
+    <!-- Warning bar -->
+    <div class="warn-bar" id="warnBar">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Complete your profile to confirm bookings. Required: First Name, Last Name, Mobile Number, and Disability Type.
+    </div>
+
+    <!-- Hero Card -->
+    <div class="hero-card">
+      <div class="hero-av-wrap">
+        <div class="hero-av" id="heroAv">U</div>
+        <div class="hero-av-cam" title="Change photo — coming soon"><i class="fa-solid fa-camera"></i></div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-name" id="heroName">Your Name</div>
+        <div class="hero-handle" id="heroHandle">@user.pwd</div>
+        <div class="hero-badges">
+          <div class="vbadge unverified" id="vBadge" onclick="openVM()">
+            <i class="fa-solid fa-shield-halved" id="vIcon"></i>
+            <span id="vLabel">PWD Not Verified</span>
+          </div>
+          <div class="cam-note">&#128247; Photo upload coming soon</div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+          <div class="prog-lbl" id="progLbl">Profile 0% complete</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="profile-grid">
+
+      <!-- Personal Info -->
+      <div class="profile-card">
+        <div class="card-title"><i class="fa-solid fa-user"></i> Personal Information</div>
+        <div class="pp-row">
+          <div class="pp-field"><label>First Name *</label><input type="text" id="pFN" placeholder="Juan" oninput="liveUpdate()"/></div>
+          <div class="pp-field"><label>Last Name *</label><input type="text" id="pLN" placeholder="Dela Cruz" oninput="liveUpdate()"/></div>
+        </div>
+        <div class="pp-row">
+          <div class="pp-field"><label>Age</label><input type="number" id="pAge" placeholder="28" min="1" max="120"/></div>
+          <div class="pp-field"><label>Gender</label>
+            <select id="pGender">
+              <option value="">Select</option>
+              <option>Male</option><option>Female</option>
+              <option>Non-binary</option><option>Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+        <div class="pp-field"><label>Date of Birth</label><input type="date" id="pDob"/></div>
+      </div>
+
+      <!-- Contact -->
+      <div class="profile-card">
+        <div class="card-title"><i class="fa-solid fa-address-book"></i> Contact Details</div>
+        <div class="pp-field"><label>Mobile Number *</label><input type="tel" id="pPhone" placeholder="+63 912 345 6789" oninput="liveUpdate()"/></div>
+        <div class="pp-field"><label>Email Address</label><input type="email" id="pEmail" placeholder="juan@email.com"/></div>
+        <div class="pp-field"><label>Home Address</label><textarea id="pAddr" placeholder="Street, Barangay, City, Province"></textarea></div>
+      </div>
+
+      <!-- Disability -->
+      <div class="profile-card">
+        <div class="card-title"><i class="fa-solid fa-wheelchair"></i> Disability Information</div>
+        <div class="pp-field"><label>Type of Disability *</label>
+          <select id="pDisType" onchange="liveUpdate()">
+            <option value="">Select disability type</option>
+            <option>Wheelchair User</option><option>Walking Difficulty</option>
+            <option>Crutches / Walker</option><option>Amputee</option>
+            <option>Visual Impairment</option><option>Hearing Impairment</option>
+            <option>Elderly Mobility</option><option>Post-Surgery</option><option>Other</option>
+          </select>
+        </div>
+        <div class="pp-field"><label>PWD ID Number <span style="color:var(--text3);font-weight:400;text-transform:none">(Optional)</span></label>
+          <input type="text" id="pPwdId" placeholder="e.g. PWD-2024-001234"/>
+        </div>
+        <div class="pp-field"><label>Special Notes for Driver</label>
+          <textarea id="pNotes" placeholder="e.g. Need help folding wheelchair, support on left side..."></textarea>
+        </div>
+      </div>
+
+      <!-- Emergency Contact -->
+      <div class="profile-card">
+        <div class="card-title"><i class="fa-solid fa-user-shield"></i> Emergency Contact</div>
+        <div class="pp-field"><label>Full Name</label><input type="text" id="pEmName" placeholder="Guardian or family member"/></div>
+        <div class="pp-field"><label>Contact Number</label><input type="tel" id="pEmPhone" placeholder="+63 912 345 6789"/></div>
+        <div class="pp-field"><label>Relationship</label>
+          <select id="pEmRel">
+            <option value="">Select</option>
+            <option>Parent</option><option>Spouse</option><option>Sibling</option>
+            <option>Child</option><option>Caregiver</option><option>Friend</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+
+    <!-- Sticky Save Bar -->
+    <div class="save-bar">
+      <div class="save-bar-left">Fields marked <span>*</span> are required to confirm bookings</div>
+      <button class="save-btn" id="saveBtn" onclick="saveProfile()">
+        <i class="fa-solid fa-floppy-disk"></i> Save Profile
+      </button>
+    </div>
+
+  </div><!-- end profile-main -->
+</div><!-- end app -->
+
+<!-- VERIFICATION MODAL -->
+<div class="vm-overlay" id="vmOverlay">
+  <div class="vm-box">
+    <div class="vm-icon">&#x1f6e1;&#xfe0f;</div>
+    <h3>PWD Verification Status</h3>
+    <p>Are you a registered Person with Disability (PWD) with a valid PWD ID issued by your local government?<br/>
+    <span style="font-size:11px;color:var(--text3)">Full ID upload verification will be available once the backend is live.</span></p>
+    <div class="vm-btns">
+      <button class="vm-yes" onclick="setVerify('verified')"><i class="fa-solid fa-check" style="margin-right:7px"></i>Yes — I am a registered PWD</button>
+      <button class="vm-pend" onclick="setVerify('pending')"><i class="fa-solid fa-clock" style="margin-right:7px"></i>I have a PWD ID but haven't uploaded yet</button>
+      <button class="vm-no"  onclick="setVerify('unverified')"><i class="fa-solid fa-xmark" style="margin-right:7px"></i>No — I am not registered</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Sidebar toggle ── */
+  document.getElementById('sidebarToggle').onclick = function() {
+    document.getElementById('sidebar').classList.toggle('open');
+  };
+
+  /* ── Data (synced via localStorage with home page) ── */
+  var pData = {
+    firstName:'', lastName:'', age:'', gender:'', dob:'',
+    phone:'', email:'', address:'',
+    disabilityType:'', pwdId:'', notes:'',
+    emName:'', emPhone:'', emRel:'',
+    verifyStatus:'unverified'
+  };
+
+  function loadFromStorage() {
+    try {
+      var saved = localStorage.getItem('pwdTravelProfile');
+      if (saved) pData = JSON.parse(saved);
+    } catch(e) {}
+  }
+
+  function saveToStorage() {
+    try { localStorage.setItem('pwdTravelProfile', JSON.stringify(pData)); } catch(e) {}
+  }
+
+  function loadFields() {
+    document.getElementById('pFN').value       = pData.firstName;
+    document.getElementById('pLN').value       = pData.lastName;
+    document.getElementById('pAge').value      = pData.age;
+    document.getElementById('pGender').value   = pData.gender;
+    document.getElementById('pDob').value      = pData.dob;
+    document.getElementById('pPhone').value    = pData.phone;
+    document.getElementById('pEmail').value    = pData.email;
+    document.getElementById('pAddr').value     = pData.address;
+    document.getElementById('pDisType').value  = pData.disabilityType;
+    document.getElementById('pPwdId').value    = pData.pwdId;
+    document.getElementById('pNotes').value    = pData.notes;
+    document.getElementById('pEmName').value   = pData.emName;
+    document.getElementById('pEmPhone').value  = pData.emPhone;
+    document.getElementById('pEmRel').value    = pData.emRel;
+    updateHero();
+    updateProgress();
+    updateVerifyBadge();
+  }
+
+  function liveUpdate() {
+    var fn = document.getElementById('pFN').value.trim();
+    var ln = document.getElementById('pLN').value.trim();
+    var full = (fn + ' ' + ln).trim();
+    document.getElementById('heroName').textContent    = full || 'Your Name';
+    document.getElementById('heroAv').textContent      = fn ? fn[0].toUpperCase() : 'U';
+    document.getElementById('heroHandle').textContent  = '@' + (fn.toLowerCase() || 'user') + '.pwd';
+    document.getElementById('sidebarAvatar').textContent = fn ? fn[0].toUpperCase() : 'U';
+    document.getElementById('sidebarName').textContent   = full || 'Your Name';
+    document.getElementById('sidebarHandle').textContent = '@' + (fn.toLowerCase() || 'user') + '.pwd';
+    updateProgress();
+  }
+
+  function updateHero() {
+    var full = (pData.firstName + ' ' + pData.lastName).trim();
+    document.getElementById('heroName').textContent    = full || 'Your Name';
+    document.getElementById('heroAv').textContent      = pData.firstName ? pData.firstName[0].toUpperCase() : 'U';
+    document.getElementById('heroHandle').textContent  = '@' + (pData.firstName.toLowerCase() || 'user') + '.pwd';
+    document.getElementById('sidebarAvatar').textContent = pData.firstName ? pData.firstName[0].toUpperCase() : 'U';
+    document.getElementById('sidebarName').textContent   = full || 'Your Name';
+    document.getElementById('sidebarHandle').textContent = '@' + (pData.firstName.toLowerCase() || 'user') + '.pwd';
+  }
+
+  function updateProgress() {
+    var fn  = document.getElementById('pFN').value.trim();
+    var ln  = document.getElementById('pLN').value.trim();
+    var ph  = document.getElementById('pPhone').value.trim();
+    var dis = document.getElementById('pDisType').value;
+    var req = [fn,ln,ph,dis].filter(Boolean).length;
+    var opt = [
+      document.getElementById('pAge').value,
+      document.getElementById('pGender').value,
+      document.getElementById('pEmail').value,
+      document.getElementById('pAddr').value,
+      document.getElementById('pEmName').value
+    ].filter(Boolean).length;
+    var pct = Math.min(100, Math.round((req/4)*65 + (opt/5)*35));
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progLbl').textContent  = 'Profile ' + pct + '% complete';
+    var warn = document.getElementById('warnBar');
+    if (req < 4) warn.style.display = 'block'; else warn.style.display = 'none';
+  }
+
+  function saveProfile() {
+    pData.firstName    = document.getElementById('pFN').value.trim();
+    pData.lastName     = document.getElementById('pLN').value.trim();
+    pData.age          = document.getElementById('pAge').value.trim();
+    pData.gender       = document.getElementById('pGender').value;
+    pData.dob          = document.getElementById('pDob').value;
+    pData.phone        = document.getElementById('pPhone').value.trim();
+    pData.email        = document.getElementById('pEmail').value.trim();
+    pData.address      = document.getElementById('pAddr').value.trim();
+    pData.disabilityType = document.getElementById('pDisType').value;
+    pData.pwdId        = document.getElementById('pPwdId').value.trim();
+    pData.notes        = document.getElementById('pNotes').value.trim();
+    pData.emName       = document.getElementById('pEmName').value.trim();
+    pData.emPhone      = document.getElementById('pEmPhone').value.trim();
+    pData.emRel        = document.getElementById('pEmRel').value;
+    saveToStorage();
+    updateHero();
+    updateProgress();
+    // Flash button
+    var btn = document.getElementById('saveBtn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+    btn.style.background = '#00c864';
+    setTimeout(function() {
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
+      btn.style.background = '';
+    }, 2000);
+  }
+
+  function updateVerifyBadge() {
+    var b = document.getElementById('vBadge');
+    var i = document.getElementById('vIcon');
+    var l = document.getElementById('vLabel');
+    b.className = 'vbadge ' + pData.verifyStatus;
+    if (pData.verifyStatus === 'verified') {
+      i.className = 'fa-solid fa-shield-check'; l.textContent = 'PWD Verified ✓';
+    } else if (pData.verifyStatus === 'pending') {
+      i.className = 'fa-solid fa-clock'; l.textContent = 'Verification Pending';
+    } else {
+      i.className = 'fa-solid fa-shield-halved'; l.textContent = 'PWD Not Verified';
+    }
+  }
+
+  function openVM()  { document.getElementById('vmOverlay').classList.add('open'); }
+  function closeVM() { document.getElementById('vmOverlay').classList.remove('open'); }
+  function setVerify(status) {
+    pData.verifyStatus = status;
+    saveToStorage();
+    updateVerifyBadge();
+    closeVM();
+  }
+
+  document.getElementById('vmOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeVM();
+  });
+
+  // Init
+  loadFromStorage();
+  loadFields();
+</script>
+</body>
+</html>

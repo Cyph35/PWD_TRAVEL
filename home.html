@@ -1,0 +1,3491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PWD Travel — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0d11; --bg2: #111318; --card: #13151c;
+      --accent: #00d4e8; --accent2: #00b5c8;
+      --text: #ffffff; --text2: #a0a8b8; --text3: #6b7280;
+      --border: rgba(255,255,255,0.07);
+      --sidebar-width: 64px; --sidebar-open: 220px;
+    }
+    html, body { height: 100%; width: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    .app { display: flex; height: 100vh; width: 100vw; }
+
+/* FAB BUTTONS */
+.fab-wrap{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:600;}
+.fab-btn{width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .2s,box-shadow .2s;box-shadow:0 6px 24px rgba(0,0,0,.5);}
+.fab-btn:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.6);}
+.fab-book{background:linear-gradient(135deg,#00d4e8,#00b5c8);color:#000;}
+.fab-msg{background:linear-gradient(135deg,#00c864,#00a050);color:#fff;}
+.fab-label{font-size:10px;font-weight:700;text-align:center;margin-top:5px;color:var(--text3);letter-spacing:.04em;}
+.fab-item{display:flex;flex-direction:column;align-items:center;}
+
+/* CONTACT CARD POPUP */
+.contact-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:800;padding-bottom:110px;}
+.contact-overlay.open{display:flex;}
+.contact-card{background:var(--bg2);border:1px solid rgba(0,212,232,.25);border-radius:20px;padding:22px;width:320px;box-shadow:0 24px 60px rgba(0,0,0,.7);animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);}
+.contact-card-title{font-size:13px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.contact-card-title i{color:var(--accent);}
+.contact-person{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border-radius:14px;margin-bottom:10px;}
+.contact-person:last-child{margin-bottom:0;}
+.contact-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;}
+.contact-av.driver{background:linear-gradient(135deg,#00d4e8,#00b5c8);color:#000;}
+.contact-av.user{background:linear-gradient(135deg,#7c6af7,#5b4de8);color:#fff;}
+.contact-info{flex:1;}
+.contact-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.contact-role{font-size:11px;color:var(--text3);margin-bottom:6px;}
+.contact-actions{display:flex;gap:8px;}
+.contact-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:50px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.contact-btn:hover{border-color:var(--accent);color:var(--accent);}
+.contact-close-btn{width:100%;margin-top:14px;padding:11px;background:transparent;border:1px solid var(--border);border-radius:50px;color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.contact-close-btn:hover{border-color:#ff6b6b;color:#ff6b6b;}
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-width); height: 100%; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 16px 0; z-index: 500; transition: width 0.3s cubic-bezier(0.4,0,0.2,1); overflow: hidden; flex-shrink: 0; }
+    .sidebar.open { width: var(--sidebar-open); align-items: flex-start; }
+    .sidebar-toggle { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: var(--text2); font-size: 18px; border-radius: 10px; margin-bottom: 24px; transition: background 0.2s, color 0.2s; flex-shrink: 0; margin-left: 12px; }
+    .sidebar-toggle:hover { background: rgba(255,255,255,0.05); color: var(--accent); }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 12px; margin-bottom: 28px; text-decoration: none; overflow: hidden; white-space: nowrap; }
+    .sidebar-logo .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: #000; }
+    .sidebar-logo .logo-text { font-weight: 800; font-size: 15px; color: var(--text); opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+    .sidebar-logo .logo-text b { color: var(--accent); }
+    .sidebar.open .sidebar-logo .logo-text { opacity: 1; }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 0 10px; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; text-decoration: none; color: var(--text2); font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; transition: background 0.2s, color 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .nav-item.active { background: rgba(0,212,232,0.1); color: var(--accent); }
+    .nav-item i { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+    .nav-label { opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+    .sidebar.open .nav-label { opacity: 1; }
+    .sidebar-bottom { padding: 0 10px; width: 100%; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 8px; }
+    .profile-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; cursor: pointer; overflow: hidden; white-space: nowrap; transition: background 0.2s; }
+    .profile-item:hover { background: rgba(255,255,255,0.05); }
+    .profile-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+    .profile-info { opacity: 0; transition: opacity 0.2s; }
+    .sidebar.open .profile-info { opacity: 1; }
+    .profile-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .profile-handle { font-size: 11px; color: var(--text3); }
+
+    /* MAP */
+    .map-area { flex: 1; position: relative; height: 100%; overflow: hidden; }
+    #map { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+    .map-ui { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+
+    /* SEARCH */
+    .search-bar { position: absolute; top: 16px; left: 16px; display: flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 50px; padding: 10px 16px; pointer-events: all; box-shadow: 0 4px 20px rgba(0,0,0,0.4); width: 280px; transition: border-color 0.2s; }
+    .search-bar:focus-within { border-color: var(--accent); }
+    .search-bar i { color: var(--text3); font-size: 14px; flex-shrink: 0; }
+    .search-bar input { background: none; border: none; outline: none; color: var(--text); font-size: 14px; font-family: inherit; width: 100%; }
+    .search-bar input::placeholder { color: var(--text3); }
+    .search-clear { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0; flex-shrink: 0; display: none; transition: color 0.2s; }
+    .search-clear:hover { color: var(--text); }
+    .search-dropdown { position: absolute; top: 58px; left: 16px; width: 280px; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.5); pointer-events: all; z-index: 20; }
+    .search-result-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; transition: background 0.15s; }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(0,212,232,0.07); }
+    .search-result-item i { color: var(--accent); margin-top: 2px; flex-shrink: 0; font-size: 13px; }
+    .search-result-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .search-result-sub { font-size: 11px; color: var(--text3); margin-top: 2px; line-height: 1.3; }
+    .search-empty { padding: 20px 16px; text-align: center; font-size: 13px; color: var(--text3); }
+    .search-loading { padding: 16px; text-align: center; font-size: 13px; color: var(--text3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    /* MAP CONTROLS */
+    .map-controls { position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; pointer-events: all; }
+    .ctrl-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: border-color 0.2s, color 0.2s; font-family: inherit; }
+    .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .weather-widget { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); cursor: pointer; transition: border-color 0.2s; }
+    .weather-widget:hover { border-color: var(--accent); }
+    .weather-widget i { color: var(--accent); font-size: 18px; }
+    .weather-temp { font-size: 16px; font-weight: 700; color: var(--text); }
+    .weather-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .zoom-controls { position: absolute; bottom: 32px; right: 16px; display: flex; flex-direction: column; gap: 4px; pointer-events: all; }
+    .zoom-btn { width: 40px; height: 40px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: border-color 0.2s, color 0.2s; font-family: inherit; font-weight: 300; }
+    .zoom-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .dark-toggle { position: absolute; bottom: 32px; left: 16px; pointer-events: all; }
+    .dark-toggle button { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text2); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: border-color 0.2s, color 0.2s; font-family: inherit; font-weight: 500; }
+    .dark-toggle button:hover { border-color: var(--accent); color: var(--accent); }
+    .location-toast { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--accent); border-radius: 50px; padding: 10px 20px; font-size: 13px; color: var(--accent); pointer-events: none; display: none; box-shadow: 0 4px 20px rgba(0,212,232,0.2); white-space: nowrap; z-index: 20; }
+    .leaflet-control-zoom { display: none !important; }
+
+    /* LOGIN WALL */
+    .login-wall { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+    .login-wall.open { display: flex; }
+    .login-wall-box { width: 360px; background: var(--card); border: 1px solid rgba(0,212,232,0.3); border-radius: 20px; padding: 36px 32px; text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes popIn { from { transform: scale(0.92) translateY(16px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .login-wall-icon { font-size: 36px; margin-bottom: 14px; }
+    .login-wall-box h2 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+    .login-wall-box p { font-size: 13px; color: var(--text2); margin-bottom: 22px; line-height: 1.6; }
+    .login-wall-btns { display: flex; gap: 10px; }
+    .wall-btn-primary { flex: 1; background: var(--accent); color: #000; border: none; border-radius: 50px; padding: 12px 14px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+    .wall-btn-primary:hover { background: var(--accent2); }
+    .wall-btn-secondary { flex: 1; background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: 50px; padding: 12px 14px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s; }
+    .wall-btn-secondary:hover { color: var(--text); border-color: var(--text2); }
+
+    /* WEATHER PANEL */
+    .weather-panel { position: fixed; top: 0; right: -400px; width: 360px; height: 100%; background: var(--bg2); border-left: 1px solid var(--border); z-index: 600; transition: right 0.35s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; padding: 28px 24px; overflow-y: auto; box-shadow: -8px 0 40px rgba(0,0,0,0.5); }
+    .weather-panel.open { right: 0; }
+    .weather-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .weather-panel-header h2 { font-size: 18px; font-weight: 800; color: var(--text); }
+    .weather-close { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text2); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; font-family: inherit; }
+    .weather-close:hover { background: rgba(0,212,232,0.1); color: var(--accent); }
+    .weather-main { background: linear-gradient(135deg, rgba(0,212,232,0.12), rgba(0,181,200,0.04)); border: 1px solid rgba(0,212,232,0.2); border-radius: 20px; padding: 28px 20px; text-align: center; margin-bottom: 16px; }
+    .weather-main-icon { font-size: 52px; margin-bottom: 8px; }
+    .weather-main-temp { font-size: 60px; font-weight: 900; color: var(--text); line-height: 1; margin-bottom: 8px; }
+    .weather-main-desc { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
+    .weather-main-location { font-size: 12px; color: var(--text3); }
+    .weather-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .weather-stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .ws-icon { font-size: 16px; color: var(--accent); margin-bottom: 4px; }
+    .ws-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .ws-val { font-size: 20px; font-weight: 800; color: var(--text); }
+    .weather-section-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; margin-top: 4px; }
+    .weather-refresh { width: 100%; background: rgba(0,212,232,0.08); border: 1px solid rgba(0,212,232,0.2); border-radius: 12px; padding: 12px; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; font-family: inherit; margin-top: 4px; }
+    .weather-refresh:hover { background: rgba(0,212,232,0.15); }
+
+    /* BOOKING MODAL */
+    .booking-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 20px; }
+    .booking-overlay.open { display: flex; }
+    .booking-modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 900px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 32px 100px rgba(0,0,0,0.7); animation: bookingIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes bookingIn { from { transform: scale(0.93) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .booking-header { display: flex; align-items: center; justify-content: space-between; padding: 28px 36px 0; flex-shrink: 0; }
+    .booking-header-left { display: flex; align-items: center; gap: 16px; }
+    .booking-header-icon { width: 50px; height: 50px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #000; flex-shrink: 0; }
+    .booking-header-left h2 { font-size: 22px; font-weight: 800; color: #fff; }
+    .booking-header-left p { font-size: 13px; color: var(--text3); margin-top: 3px; }
+    .booking-close { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text2); font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; font-family: inherit; }
+    .booking-close:hover { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+    .booking-steps { display: flex; align-items: center; padding: 24px 36px 0; flex-shrink: 0; }
+    .bk-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+    .bk-step-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--card); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--text3); transition: all 0.3s; }
+    .bk-step > span { font-size: 12px; color: var(--text3); font-weight: 500; transition: color 0.3s; }
+    .bk-step.active .bk-step-circle { background: var(--accent); border-color: var(--accent); color: #000; }
+    .bk-step.active > span { color: var(--accent); font-weight: 700; }
+    .bk-step.done .bk-step-circle { background: rgba(0,212,232,0.12); border-color: var(--accent); color: var(--accent); }
+    .bk-step.done > span { color: var(--text2); }
+    .bk-step-line { flex: 1; height: 2px; background: var(--border); margin: 0 6px; margin-bottom: 22px; transition: background 0.3s; }
+    .bk-step-line.done { background: var(--accent); }
+    .booking-body { flex: 1; overflow-y: auto; padding: 28px 36px; }
+    .booking-body::-webkit-scrollbar { width: 4px; }
+    .booking-body::-webkit-scrollbar-track { background: transparent; }
+    .booking-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .bk-step-content { display: none; }
+    .bk-step-content.active { display: block; }
+    .bk-step-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .bk-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .bk-col { display: flex; flex-direction: column; }
+    .bk-group { margin-bottom: 18px; }
+    .bk-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 9px; }
+    .bk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .bk-inp-wrap { position: relative; display: block; }
+    .bk-inp-wrap > i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text3); pointer-events: none; z-index: 2; line-height: 1; }
+    .bk-inp-wrap > input { padding-left: 42px !important; }
+    .bk-group input, .bk-group textarea, .bk-group select { width: 100%; padding: 13px 16px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit; }
+    .bk-group input:focus, .bk-group textarea:focus { border-color: var(--accent); }
+    .bk-group input::placeholder, .bk-group textarea::placeholder { color: var(--text3); font-size: 13px; }
+    .bk-group textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .bk-group input[type="date"]::-webkit-calendar-picker-indicator,
+    .bk-group input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
+    .disability-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .bk-chip { padding: 8px 14px; border-radius: 50px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.2s; user-select: none; }
+    .bk-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .bk-chip.selected { background: rgba(0,212,232,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .gender-options { display: flex; gap: 10px; flex-wrap: wrap; }
+    .gender-opt { cursor: pointer; }
+    .gender-opt input { display: none; }
+    .gender-opt span { display: block; padding: 10px 18px; border-radius: 50px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); font-size: 14px; color: var(--text2); transition: all 0.2s; }
+    .gender-opt input:checked + span { background: rgba(0,212,232,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .driver-filter-btns { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .driver-filter-btn { padding: 9px 18px; border-radius: 50px; background: var(--card); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .driver-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .driver-filter-btn.active { background: rgba(0,212,232,0.12); border-color: var(--accent); color: var(--accent); }
+    .driver-best-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,212,232,0.06); border: 1px solid rgba(0,212,232,0.15); border-radius: 50px; padding: 5px 14px; font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
+    .driver-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .driver-card { background: var(--card); border: 2px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+    .driver-card:hover { border-color: rgba(0,212,232,0.4); }
+    .driver-card.selected { border-color: var(--accent); background: rgba(0,212,232,0.06); }
+    .driver-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #000; flex-shrink: 0; }
+    .driver-info { flex: 1; min-width: 0; }
+    .driver-name { font-size: 14px; font-weight: 700; color: #fff; }
+    .driver-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .driver-tag { font-size: 10px; padding: 3px 8px; border-radius: 50px; background: rgba(0,212,232,0.08); border: 1px solid rgba(0,212,232,0.15); color: var(--accent); font-weight: 600; }
+    .driver-tag.green { background: rgba(0,200,100,0.08); border-color: rgba(0,200,100,0.2); color: #00c864; }
+    .driver-tag.orange { background: rgba(255,160,0,0.08); border-color: rgba(255,160,0,0.2); color: #ffa000; }
+    .driver-right { text-align: right; flex-shrink: 0; }
+    .driver-rating { font-size: 13px; font-weight: 700; color: #fff; }
+    .driver-rating i { color: #ffa000; font-size: 11px; }
+    .driver-dist { font-size: 11px; color: var(--text3); margin-top: 3px; }
+    .driver-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .driver-card.selected .driver-radio { border-color: var(--accent); background: var(--accent); }
+    .driver-card.selected .driver-radio::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #000; display: block; }
+
+    /* FEE STEP */
+    .fee-card { background: var(--card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 14px; }
+    .fee-card-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .fee-card-title i { color: var(--accent); }
+    .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .fee-row:last-child { border-bottom: none; }
+    .fee-label { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
+    .fee-label i { color: var(--text3); font-size: 12px; width: 14px; text-align: center; }
+    .fee-value { font-size: 14px; font-weight: 600; color: #fff; }
+    .fee-value.fee-extra { color: #ffa000; }
+    .fee-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0; }
+    .fee-label-total { font-size: 15px; font-weight: 800; color: var(--accent); }
+    .fee-value-total { font-size: 22px; font-weight: 900; color: var(--accent); }
+    .fee-note { font-size: 11px; color: var(--text3); line-height: 1.6; display: flex; gap: 8px; align-items: flex-start; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; }
+    .fee-note i { color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+    .addon-list { display: flex; flex-direction: column; gap: 8px; }
+    .addon-item { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--bg); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color 0.2s; }
+    .addon-item:hover { border-color: rgba(0,212,232,0.3); }
+    .addon-item:has(.addon-cb:checked) { border-color: var(--accent); background: rgba(0,212,232,0.05); }
+    .addon-cb { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+    .addon-info { display: flex; justify-content: space-between; align-items: center; flex: 1; }
+    .addon-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .addon-price { font-size: 13px; font-weight: 700; color: var(--accent); }
+    .addon-desc { width: 100%; font-size: 11px; color: var(--text3); padding-left: 26px; line-height: 1.5; }
+    .fee-agree { display: flex; align-items: flex-start; gap: 12px; background: rgba(0,212,232,0.05); border: 1px solid rgba(0,212,232,0.2); border-radius: 12px; padding: 14px; margin-top: 4px; }
+    .fee-agree-cb { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+    .fee-agree label { font-size: 13px; color: var(--text2); line-height: 1.6; cursor: pointer; }
+
+    /* CONFIRM */
+    .confirm-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .confirm-section { background: var(--card); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; }
+    .confirm-section h4 { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .confirm-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 12px; }
+    .confirm-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .confirm-label { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+    .confirm-value { font-size: 13px; color: #fff; font-weight: 600; text-align: right; }
+    .confirm-driver-card { display: flex; align-items: center; gap: 12px; background: rgba(0,212,232,0.06); border: 1px solid rgba(0,212,232,0.2); border-radius: 12px; padding: 14px; }
+    .confirm-driver-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #000; flex-shrink: 0; }
+    .terms-check { display: flex; align-items: flex-start; gap: 12px; margin-top: 14px; }
+    .terms-check input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+    .terms-check label { font-size: 13px; color: var(--text2); line-height: 1.6; cursor: pointer; }
+    .terms-check a { color: var(--accent); text-decoration: none; }
+    .terms-check a:hover { text-decoration: underline; }
+
+    /* FOOTER BUTTONS */
+    .booking-footer { padding: 18px 36px 28px; display: flex; gap: 12px; flex-shrink: 0; border-top: 1px solid var(--border); }
+    .btn-bk-back { padding: 14px 28px; border-radius: 50px; background: transparent; border: 1px solid rgba(255,255,255,0.12); color: var(--text2); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-bk-back:hover { border-color: var(--text2); color: var(--text); }
+    .btn-bk-next { flex: 1; padding: 14px 28px; border-radius: 50px; background: var(--accent); border: none; color: #000; font-size: 15px; font-weight: 800; cursor: pointer; transition: background 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-bk-next:hover { background: var(--accent2); }
+    .btn-bk-next.confirm-btn { background: #00c864; }
+    .btn-bk-next.confirm-btn:hover { background: #00a852; }
+
+    /* SUCCESS */
+    .booking-success { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 36px; flex: 1; }
+    .booking-success.show { display: flex; }
+    .success-icon { width: 88px; height: 88px; border-radius: 50%; background: rgba(0,200,100,0.1); border: 2px solid #00c864; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 22px; animation: successPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes successPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .booking-success h3 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .booking-success p { font-size: 15px; color: var(--text2); line-height: 1.6; max-width: 400px; margin-bottom: 28px; }
+    .booking-ref { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 36px; font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: 0.14em; margin-bottom: 32px; }
+    
+    /* CALL SCREEN */
+    .call-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px;}
+    .call-overlay.open{display:flex;}
+    .call-card{background:linear-gradient(180deg,#0d1f1a 0%,#091a14 100%);border:1px solid rgba(0,212,232,.2);border-radius:24px;padding:36px 28px;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;box-shadow:0 32px 80px rgba(0,0,0,.7);position:relative;}
+    .call-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;}
+    .call-close:hover{background:rgba(255,80,80,.2);color:#ff6b6b;border-color:#ff6b6b;}
+    .call-av{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#00d4e8,#00b5c8);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#000;margin-bottom:16px;box-shadow:0 0 0 10px rgba(0,212,232,.08),0 0 0 20px rgba(0,212,232,.04);}
+    .call-name{font-size:22px;font-weight:800;color:#fff;margin-bottom:5px;}
+    .call-status{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:8px;letter-spacing:.04em;}
+    .call-timer{font-size:13px;color:var(--accent);margin-bottom:8px;display:none;}
+    .call-info{font-size:11px;color:rgba(255,255,255,.25);margin-bottom:32px;}
+    .call-actions{display:flex;gap:24px;align-items:center;}
+    .call-action-btn{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;background:none;border:none;font-family:inherit;}
+    .call-action-btn .icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
+    .call-action-btn .lbl{font-size:10px;color:rgba(255,255,255,.45);font-weight:500;}
+    .call-end{background:#ff3b30;color:#fff;}
+    .call-mute{background:rgba(255,255,255,.12);color:#fff;}
+    .call-spk{background:rgba(255,255,255,.12);color:#fff;}
+
+    /* MESSAGE SCREEN */
+    .msg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px;}
+    .msg-overlay.open{display:flex;}
+    .msg-card{background:var(--bg2);border:1px solid var(--border);border-radius:24px;width:100%;max-width:380px;max-height:560px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);}
+    .msg-header{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .msg-back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;flex-shrink:0;}
+    .msg-back:hover{border-color:var(--accent);color:var(--accent);}
+    .msg-header-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#00d4e8,#00b5c8);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#000;flex-shrink:0;}
+    .msg-header-info{flex:1;}
+    .msg-header-name{font-size:14px;font-weight:700;color:#fff;}
+    .msg-header-status{font-size:11px;color:#00c864;display:flex;align-items:center;gap:4px;}
+    .msg-header-status::before{content:'';width:5px;height:5px;border-radius:50%;background:#00c864;display:inline-block;}
+    .msg-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+    .msg-body::-webkit-scrollbar{width:3px;}
+    .msg-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+    .msg-bubble{max-width:75%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;}
+    .msg-bubble.driver{background:var(--card);color:var(--text);border-bottom-left-radius:3px;align-self:flex-start;}
+    .msg-bubble.me{background:var(--accent);color:#000;font-weight:500;border-bottom-right-radius:3px;align-self:flex-end;}
+    .msg-time{font-size:10px;margin-top:2px;}
+    .msg-time.driver{color:var(--text3);padding-left:2px;}
+    .msg-time.me{color:rgba(0,0,0,.4);text-align:right;padding-right:2px;}
+    .msg-quick{display:flex;gap:7px;padding:0 14px 10px;overflow-x:auto;flex-shrink:0;}
+    .msg-quick::-webkit-scrollbar{display:none;}
+    .msg-quick-btn{white-space:nowrap;padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:50px;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all .2s;}
+    .msg-quick-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .msg-footer{padding:10px 14px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+    .msg-input{flex:1;padding:10px 14px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:50px;color:#fff;font-size:13px;outline:none;font-family:inherit;}
+    .msg-input::placeholder{color:var(--text3);}
+    .msg-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+
+    @media (max-width: 900px) {
+      .booking-modal { max-width: 98vw; }
+      .driver-list, .confirm-two-col, .bk-two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .booking-modal { max-height: 96vh; border-radius: 18px; }
+      .booking-header, .booking-steps, .booking-footer { padding-left: 20px; padding-right: 20px; }
+      .booking-body { padding: 20px; }
+      .bk-row { grid-template-columns: 1fr; }
+    }
+  
+    /* ========== BOOKING CONFIRMED SPLIT CARD ========== */
+    .bk-confirmed-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(12px); display: none; align-items: center;
+      justify-content: center; z-index: 3000; padding: 20px;
+    }
+    .bk-confirmed-overlay.open { display: flex; }
+    .bk-confirmed-card {
+      width: 100%; max-width: 1120px; height: 92vh; max-height: 92vh;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden; display: flex;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+      animation: bookingIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .bkc-map-side { flex: 1.2; position: relative; min-height: 540px; overflow: hidden; }
+    #bkcMap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 540px; }
+    .bkc-map-badge {
+      position: absolute; z-index: 1002; background: rgba(17,19,24,0.92);
+      border: 1px solid var(--border); border-radius: 50px;
+      padding: 8px 16px; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; gap: 7px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6); pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+    .bkc-map-badge.origin { bottom: 20px; left: 16px; color: var(--accent); }
+    .bkc-map-badge.dest   { top: 20px; right: 16px; color: #ff6b6b; }
+    .bkc-ref-chip {
+      position: absolute; z-index: 1001; top: 16px; left: 16px;
+      background: rgba(0,0,0,0.78); border: 1px solid rgba(0,212,232,0.4);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 11px; font-weight: 800; color: var(--accent);
+      letter-spacing: 0.12em; backdrop-filter: blur(8px); pointer-events: none;
+    }
+    .bkc-info-side {
+      width: 420px; flex-shrink: 0; overflow-y: auto;
+      display: flex; flex-direction: column;
+      border-left: 1px solid var(--border);
+    }
+    .bkc-info-side::-webkit-scrollbar { width: 4px; }
+    .bkc-info-side::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .bkc-top-bar {
+      padding: 14px 20px 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .bkc-success-badge { display: flex; align-items: center; gap: 12px; }
+    .bkc-success-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,200,100,0.12); border: 2px solid #00c864;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      animation: successPop 0.5s cubic-bezier(0.34,1.56,0.64,1); flex-shrink: 0;
+    }
+    .bkc-success-title { font-size: 15px; font-weight: 800; color: #fff; }
+    .bkc-success-sub   { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .bkc-close-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text2); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s; font-family: inherit; flex-shrink: 0;
+    }
+    .bkc-close-btn:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+    .bkc-section { padding: 10px 20px; border-bottom: 1px solid var(--border); }
+    .bkc-section-title {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+    }
+    .bkc-rider-card {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 9px 12px; margin-bottom: 8px;
+    }
+    .bkc-rider-av {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--accent); color: #000;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px; flex-shrink: 0;
+    }
+    .bkc-rider-name { font-size: 14px; font-weight: 800; color: #fff; }
+    .bkc-rider-sub  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .bkc-pwd-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(0,212,232,0.1); border: 1px solid rgba(0,212,232,0.25);
+      border-radius: 50px; padding: 3px 10px;
+      font-size: 10px; font-weight: 700; color: var(--accent); margin-top: 5px;
+    }
+    .bkc-info-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 12px; gap: 10px;
+    }
+    .bkc-info-row:last-child { border-bottom: none; }
+    .bkc-info-label { color: var(--text3); flex-shrink: 0; }
+    .bkc-info-val   { font-weight: 600; color: #fff; text-align: right; }
+    .bkc-status-ready {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #00c864; font-weight: 700;
+    }
+    .bkc-status-ready::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: #00c864; display: inline-block;
+      box-shadow: 0 0 8px rgba(0,200,100,0.6);
+      animation: bkcPulse 1.5s infinite;
+    }
+    @keyframes bkcPulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.4; transform:scale(1.4); }
+    }
+    .bkc-fare-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text2); padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .bkc-fare-row span:last-child { font-weight: 600; color: #fff; }
+    .bkc-fare-discount span:last-child { color: #00c864 !important; }
+    .bkc-fare-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 0 4px; margin-top: 8px;
+      border-top: 1px solid rgba(0,212,232,0.3);
+    }
+    .bkc-fare-total-label { font-size: 14px; font-weight: 800; color: var(--accent); }
+    .bkc-fare-total-val   { font-size: 24px; font-weight: 900; color: var(--accent); }
+    .bkc-bottom-btn {
+      margin: 4px 20px 14px; padding: 11px;
+      background: var(--accent); border: none; border-radius: 50px;
+      color: #000; font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .bkc-bottom-btn:hover { background: var(--accent2); }
+    @media (max-width: 768px) {
+      .bk-confirmed-card { flex-direction: column; max-height: 96vh; }
+      .bkc-map-side { min-height: 220px; }
+      #bkcMap { min-height: 220px; }
+      .bkc-info-side { width: 100%; }
+    }
+
+  
+    /* ===== MAP LOCATION PICKER MODAL ===== */
+    .loc-picker-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px); display: none; align-items: center;
+      justify-content: center; z-index: 4000; padding: 20px;
+    }
+    .loc-picker-overlay.open { display: flex; }
+    .loc-picker-modal {
+      width: 100%; max-width: 700px; height: 82vh;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden; display: flex;
+      flex-direction: column; box-shadow: 0 32px 100px rgba(0,0,0,0.7);
+      animation: bookingIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .loc-picker-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .loc-picker-header h3 { font-size: 15px; font-weight: 700; color: #fff; }
+    .loc-picker-search {
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
+    .loc-picker-search input {
+      flex: 1; background: var(--card); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 14px;
+      outline: none; font-family: inherit; transition: border-color 0.2s;
+    }
+    .loc-picker-search input:focus { border-color: var(--accent); }
+    .loc-picker-search button { 
+    .loc-picker-search button:nth-of-type(1) { background: #00c864 !important; color: #000 !important; }
+    .loc-picker-search button:nth-of-type(1):hover { background: #00b850 !important; }
+    .loc-picker-search button:nth-of-type(1) i { color: #000 !important; }
+
+      background: var(--accent); border: none; border-radius: 10px;
+      padding: 10px 16px; color: #000; font-weight: 700; font-size: 13px;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+    }
+    #locPickerMap { flex: 1; }
+    .loc-picker-bar {
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; background: var(--bg2);
+    }
+    .loc-picker-chosen { font-size: 13px; color: var(--text2); flex: 1; margin-right: 12px; }
+    .loc-picker-chosen strong { color: var(--accent); display: block; margin-top: 2px; font-size: 14px; }
+    .loc-picker-confirm {
+      background: var(--accent); border: none; border-radius: 50px;
+      padding: 11px 24px; color: #000; font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+    }
+    .loc-picker-confirm:disabled { background: var(--text3); cursor: not-allowed; }
+    .bk-loc-btn {
+      width: 100%; padding: 13px 16px; background: var(--card);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      color: var(--text3); font-size: 14px; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: border-color 0.2s, color 0.2s; text-align: left;
+    }
+    .bk-loc-btn:hover { border-color: var(--accent); color: var(--text); }
+    .bk-loc-btn.has-value { color: #fff; border-color: rgba(0,212,232,0.35); }
+    .bk-loc-btn i { flex-shrink: 0; }
+    .bk-loc-btn span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bk-dist-auto {
+      padding: 10px 14px; background: rgba(0,212,232,0.06);
+      border: 1px solid rgba(0,212,232,0.2); border-radius: 12px;
+      font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px;
+    }
+    .bk-dist-auto i { color: var(--accent); }
+    .bk-dist-auto strong { color: var(--accent); }
+
+  
+    /* ===== HISTORY PANEL ===== */
+    .history-panel {
+      position: fixed; top: 0; right: -420px; width: 400px; height: 100%;
+      background: var(--bg2); border-left: 1px solid var(--border);
+      z-index: 601; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.5); overflow: hidden;
+    }
+    .history-panel.open { right: 0; }
+    .history-panel-header {
+      padding: 24px 20px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .history-panel-header h2 { font-size: 17px; font-weight: 800; color: var(--text); }
+    .history-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text2); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s; font-family: inherit;
+    }
+    .history-close:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+    .history-list { flex: 1; overflow-y: auto; padding: 14px 16px; }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .history-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .history-item:hover { border-color: var(--accent); }
+    .history-item-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .history-ref {
+      font-size: 11px; font-weight: 800; color: var(--accent);
+      letter-spacing: 0.1em; background: rgba(0,212,232,0.08);
+      border: 1px solid rgba(0,212,232,0.2); border-radius: 50px;
+      padding: 3px 10px;
+    }
+    .history-status-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 10px;
+      border-radius: 50px; text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .history-status-badge.active { background: rgba(0,200,100,0.1); color: #00c864; border: 1px solid rgba(0,200,100,0.2); }
+    .history-status-badge.completed { background: rgba(0,212,232,0.08); color: var(--accent); border: 1px solid rgba(0,212,232,0.2); }
+    .history-route {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text); font-weight: 600;
+      margin-bottom: 6px; overflow: hidden;
+    }
+    .history-route span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+    .history-route i { color: var(--accent); flex-shrink: 0; font-size: 11px; }
+    .history-meta { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+    .history-fare { font-size: 14px; font-weight: 800; color: var(--accent); margin-top: 6px; }
+    .history-empty {
+      text-align: center; padding: 60px 20px;
+      font-size: 14px; color: var(--text3); line-height: 1.8;
+    }
+    .history-empty i { font-size: 40px; color: var(--border); display: block; margin-bottom: 16px; }
+
+  
+    /* ===== HISTORY DETAIL MODAL ===== */
+    .history-detail-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px); display: none; align-items: center;
+      justify-content: center; z-index: 2501; padding: 20px;
+    }
+    .history-detail-overlay.open { display: flex; }
+    .history-detail-card {
+      width: 100%; max-width: 520px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+      animation: bookingIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .hd-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hd-header-left { display: flex; align-items: center; gap: 12px; }
+    .hd-header-icon {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(0,212,232,0.1); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .hd-ref { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: 0.1em; }
+    .hd-booked-on { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .hd-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text2); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s; font-family: inherit;
+    }
+    .hd-close:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+    .hd-route-strip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; background: rgba(0,212,232,0.04);
+      border-bottom: 1px solid var(--border);
+    }
+    .hd-route-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .hd-route-from { font-size: 13px; font-weight: 700; color: #fff; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hd-route-arrow { color: var(--text3); font-size: 12px; flex-shrink: 0; }
+    .hd-route-to { font-size: 13px; font-weight: 700; color: #fff; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+    .hd-body { padding: 18px 24px; }
+    .hd-section { margin-bottom: 16px; }
+    .hd-section-title {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+    }
+    .hd-section-title i { color: var(--accent); }
+    .hd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .hd-cell {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px;
+    }
+    .hd-cell-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; }
+    .hd-cell-val { font-size: 13px; font-weight: 600; color: #fff; }
+    .hd-fare-rows { display: flex; flex-direction: column; gap: 0; }
+    .hd-fare-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text2);
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .hd-fare-row:last-child { border-bottom: none; }
+    .hd-fare-row span:last-child { font-weight: 600; color: #fff; }
+    .hd-fare-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; margin-top: 8px;
+      background: rgba(0,212,232,0.07); border: 1px solid rgba(0,212,232,0.2);
+      border-radius: 12px;
+    }
+    .hd-fare-total-label { font-size: 14px; font-weight: 800; color: var(--accent); }
+    .hd-fare-total-val { font-size: 22px; font-weight: 900; color: var(--accent); }
+    .hd-status-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px 20px;
+    }
+    .hd-status-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; padding: 5px 14px;
+      border-radius: 50px; text-transform: uppercase; letter-spacing: 0.07em;
+    }
+    .hd-status-chip.completed { background: rgba(0,212,232,0.1); color: var(--accent); border: 1px solid rgba(0,212,232,0.25); }
+    .hd-status-chip.active { background: rgba(0,200,100,0.1); color: #00c864; border: 1px solid rgba(0,200,100,0.25); }
+    .hd-status-chip.cancelled { background: rgba(255,80,80,0.1); color: #ff6b6b; border: 1px solid rgba(255,80,80,0.25); }
+
+  
+    /* ===== LOCATION AUTOSUGGEST DROPDOWN ===== */
+    .loc-picker-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 0 0 16px 16px; display: none;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.7); pointer-events: all;
+      z-index: 9999; max-height: 260px; overflow-y: auto;
+    }
+    .loc-picker-dropdown.open { display: block; }
+    .loc-picker-result-item {
+      padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px; transition: background 0.15s;
+    }
+    .loc-picker-result-item:hover {
+      background: rgba(0,212,232,0.07);
+    }
+    .loc-picker-result-item:last-child { border-bottom: none; }
+    .loc-picker-result-icon { color: var(--accent); font-size: 16px; flex-shrink: 0; }
+    .loc-picker-result-main { flex: 1; min-width: 0; }
+    .loc-picker-result-name {
+      font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3;
+    }
+    .loc-picker-result-sub {
+      font-size: 12px; color: var(--text3); margin-top: 2px; line-height: 1.3;
+    }
+    .loc-picker-loading {
+      padding: 16px; text-align: center; font-size: 13px; color: var(--text2);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .loc-picker-empty {
+      padding: 20px 16px; text-align: center; font-size: 13px; color: var(--text3);
+    }
+
+  
+    /* ===== USER PROFILE PANEL ===== */
+    .profile-panel {
+      position: fixed; top: 0; right: -480px; width: 440px; height: 100%;
+      background: var(--bg2); border-left: 1px solid var(--border);
+      z-index: 700; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.6); overflow: hidden;
+    }
+    .profile-panel.open { right: 0; }
+    .profile-panel-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .profile-panel-header h2 { font-size: 17px; font-weight: 800; color: var(--text); }
+    .pp-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text2); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s; font-family: inherit;
+    }
+    .pp-close:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+    .profile-panel-body { flex: 1; overflow-y: auto; padding: 0 0 20px; }
+    .profile-panel-body::-webkit-scrollbar { width: 4px; }
+    .profile-panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Avatar hero */
+    .pp-hero {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 24px 20px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,212,232,0.06) 0%, transparent 100%);
+    }
+    .pp-avatar-wrap { position: relative; margin-bottom: 14px; }
+    .pp-avatar {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 900; color: #000;
+      border: 3px solid var(--accent); box-shadow: 0 0 0 4px rgba(0,212,232,0.15);
+    }
+    .pp-avatar-edit {
+      position: absolute; bottom: 2px; right: 2px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); border: 2px solid var(--bg2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 11px; color: #000;
+      transition: background 0.2s;
+    }
+    .pp-avatar-edit:hover { background: var(--accent2); }
+    .pp-avatar-edit-note {
+      font-size: 10px; color: var(--text3); text-align: center;
+      margin-top: -8px; margin-bottom: 8px;
+    }
+    .pp-display-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .pp-handle { font-size: 13px; color: var(--text3); margin-bottom: 10px; }
+    .pp-verify-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; padding: 5px 14px;
+      border-radius: 50px; letter-spacing: 0.06em; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pp-verify-badge.verified { background: rgba(0,200,100,0.12); color: #00c864; border: 1px solid rgba(0,200,100,0.3); }
+    .pp-verify-badge.unverified { background: rgba(255,160,0,0.1); color: #ffa000; border: 1px solid rgba(255,160,0,0.3); }
+    .pp-verify-badge.pending { background: rgba(0,212,232,0.08); color: var(--accent); border: 1px solid rgba(0,212,232,0.2); }
+    .pp-complete-bar {
+      width: 100%; margin-top: 14px;
+      background: rgba(255,255,255,0.06); border-radius: 50px; height: 6px; overflow: hidden;
+    }
+    .pp-complete-fill {
+      height: 100%; border-radius: 50px;
+      background: linear-gradient(90deg, var(--accent), #00c864);
+      transition: width 0.4s ease;
+    }
+    .pp-complete-label { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+    /* Sections */
+    .pp-section { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+    .pp-section-title {
+      font-size: 11px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .pp-section-title i { color: var(--accent); }
+    .pp-field { margin-bottom: 14px; }
+    .pp-field:last-child { margin-bottom: 0; }
+    .pp-field label {
+      display: block; font-size: 11px; font-weight: 700;
+      color: var(--text2); text-transform: uppercase;
+      letter-spacing: 0.07em; margin-bottom: 7px;
+    }
+    .pp-field input, .pp-field select, .pp-field textarea {
+      width: 100%; padding: 11px 14px;
+      background: var(--card); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #fff; font-size: 14px;
+      outline: none; font-family: inherit; transition: border-color 0.2s;
+    }
+    .pp-field input:focus, .pp-field select:focus, .pp-field textarea:focus { border-color: var(--accent); }
+    .pp-field input::placeholder, .pp-field textarea::placeholder { color: var(--text3); }
+    .pp-field select option { background: var(--card); }
+    .pp-field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+    .pp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pp-save-btn {
+      width: calc(100% - 48px); margin: 16px 24px 0;
+      padding: 13px; background: var(--accent); border: none;
+      border-radius: 50px; color: #000; font-size: 14px;
+      font-weight: 800; cursor: pointer; font-family: inherit;
+      transition: background 0.2s; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .pp-save-btn:hover { background: var(--accent2); }
+
+    /* Verification modal */
+    .pp-verify-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px); display: none;
+      align-items: center; justify-content: center; z-index: 3000; padding: 20px;
+    }
+    .pp-verify-modal.open { display: flex; }
+    .pp-verify-box {
+      background: var(--bg2); border: 1px solid rgba(0,212,232,0.3);
+      border-radius: 24px; padding: 32px; max-width: 380px; width: 100%;
+      text-align: center; box-shadow: 0 32px 100px rgba(0,0,0,0.7);
+      animation: bookingIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .pp-verify-icon { font-size: 44px; margin-bottom: 14px; }
+    .pp-verify-box h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .pp-verify-box p { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 22px; }
+    .pp-verify-btns { display: flex; flex-direction: column; gap: 10px; }
+    .pp-verify-yes {
+      padding: 13px; background: #00c864; border: none; border-radius: 50px;
+      color: #000; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
+    }
+    .pp-verify-no {
+      padding: 13px; background: transparent; border: 1px solid var(--border);
+      border-radius: 50px; color: var(--text2); font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .pp-verify-pending {
+      padding: 13px; background: rgba(0,212,232,0.08); border: 1px solid rgba(0,212,232,0.2);
+      border-radius: 50px; color: var(--accent); font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* Complete profile popup */
+    .pp-complete-popup {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--bg2); border: 1px solid rgba(0,212,232,0.3);
+      border-radius: 18px; padding: 18px 20px; max-width: 320px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6); z-index: 1000;
+      display: none; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .pp-complete-popup.show { display: block; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .pp-popup-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .pp-popup-sub { font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 14px; }
+    .pp-popup-btns { display: flex; gap: 8px; }
+    .pp-popup-go {
+      flex: 1; padding: 10px; background: var(--accent); border: none;
+      border-radius: 50px; color: #000; font-size: 13px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+    }
+    .pp-popup-later {
+      padding: 10px 16px; background: transparent; border: 1px solid var(--border);
+      border-radius: 50px; color: var(--text3); font-size: 13px;
+      cursor: pointer; font-family: inherit;
+    }
+    .pp-incomplete-warn {
+      background: rgba(255,160,0,0.08); border: 1px solid rgba(255,160,0,0.25);
+      border-radius: 12px; padding: 12px 14px; margin-top: 10px;
+      font-size: 12px; color: #ffa000; line-height: 1.6; display: none;
+    }
+    .pp-incomplete-warn i { margin-right: 6px; }
+
+
+    /* ===== SETTINGS PANEL ===== */
+.settings-panel {
+  position: fixed; top: 0; right: -480px; width: 440px; height: 100%;
+  background: var(--bg2); border-left: 1px solid var(--border);
+  z-index: 800; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0,0,0,0.6); overflow: hidden;
+}
+.settings-panel.open { right: 0; }
+.settings-panel-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.settings-panel-header h2 { font-size: 17px; font-weight: 800; color: var(--text); }
+.settings-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text2); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s; font-family: inherit;
+}
+.settings-close:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+.settings-panel-body {
+  flex: 1; overflow-y: auto; padding: 0 0 20px;
+}
+.settings-panel-body::-webkit-scrollbar { width: 4px; }
+.settings-panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.settings-section {
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+}
+.settings-section-title {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.settings-section-title i { color: var(--accent); }
+
+.settings-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 10px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.settings-item:last-child { margin-bottom: 0; }
+.settings-item:hover { border-color: rgba(0,212,232,0.3); background: rgba(0,212,232,0.03); }
+.settings-item.danger { border-color: rgba(255,107,107,0.2); }
+.settings-item.danger:hover { border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.05); }
+
+.settings-item-left {
+  display: flex; align-items: center; gap: 12px;
+}
+.settings-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(0,212,232,0.08); border: 1px solid rgba(0,212,232,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 15px; flex-shrink: 0;
+}
+.settings-item-info { flex: 1; min-width: 0; }
+.settings-item-label {
+  font-size: 14px; font-weight: 600; color: #fff;
+  margin-bottom: 3px;
+}
+.settings-item-desc {
+  font-size: 11px; color: var(--text3); line-height: 1.4;
+}
+.settings-arrow {
+  color: var(--text3); font-size: 12px;
+  transition: color 0.2s;
+}
+.settings-item:hover .settings-arrow { color: var(--accent); }
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative; display: inline-block;
+  width: 48px; height: 26px; flex-shrink: 0;
+}
+.settings-toggle input {
+  opacity: 0; width: 0; height: 0;
+}
+.toggle-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 26px; transition: 0.3s;
+}
+.toggle-slider:before {
+  position: absolute; content: "";
+  height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background: var(--text3); border-radius: 50%;
+  transition: 0.3s;
+}
+.settings-toggle input:checked + .toggle-slider {
+  background: var(--accent); border-color: var(--accent);
+}
+.settings-toggle input:checked + .toggle-slider:before {
+  transform: translateX(22px); background: #000;
+}
+.settings-toggle input:disabled + .toggle-slider {
+  opacity: 0.6; cursor: not-allowed;
+}
+
+/* Select Dropdown */
+.settings-select {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  color: var(--text2); font-size: 12px;
+  font-family: inherit; cursor: pointer;
+  min-width: 140px;
+}
+.settings-select:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
+.settings-select option {
+  background: var(--bg2); color: var(--text);
+}
+
+/* Log Out Section */
+.settings-logout-section {
+  padding: 20px 24px;
+}
+.settings-logout-btn {
+  width: 100%; padding: 14px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text2);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; transition: all 0.2s;
+}
+.settings-logout-btn:hover {
+  border-color: #ff6b6b; color: #ff6b6b;
+  background: rgba(255,107,107,0.05);
+}
+
+.settings-version {
+  text-align: center; font-size: 11px;
+  color: var(--text3); padding: 10px 24px 20px;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 480px) {
+  .settings-panel { width: 100%; right: -100%; }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <a class="sidebar-logo" href="index.html">
+      <div class="logo-icon">♿</div>
+      <span class="logo-text"><b>PWD</b>TRAVEL</span>
+    </a>
+    <nav class="sidebar-nav">
+      <button class="nav-item active"><i class="fa-solid fa-house"></i><span class="nav-label">Home</span></button>
+      <button class="nav-item" id="navUpdates"><i class="fa-solid fa-bell"></i><span class="nav-label">Updates</span></button>
+      <button class="nav-item" id="navHistory"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-label">History</span></button>
+      <button class="nav-item" id="navExplore" onclick="openBooking()"><i class="fa-solid fa-calendar-check"></i><span class="nav-label">Book a Ride</span></button>
+      <button class="nav-item" id="navWeather"><i class="fa-solid fa-cloud-sun"></i><span class="nav-label">Weather</span></button>
+      <button class="nav-item"><i class="fa-solid fa-headset"></i><span class="nav-label">Support</span></button>
+      <button class="nav-item" id="navSettings" onclick="openSettingsPanel()"><i class="fa-solid fa-gear"></i><span class="nav-label">Settings</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="profile-item" id="profileItem" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+        <div class="profile-avatar">K</div>
+        <div class="profile-info">
+          <div class="profile-name">Klint Vincent</div>
+          <div class="profile-handle">@klint.pwd</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-panel-header">
+    <h2><i class="fa-solid fa-gear" style="color:var(--accent);margin-right:10px;"></i>Settings</h2>
+    <button class="settings-close" onclick="closeSettingsPanel()">&#x2715;</button>
+  </div>
+  
+  <div class="settings-panel-body">
+    
+    <!-- Profile Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-user"></i> Profile</div>
+      <div class="settings-item" onclick="window.location.href='profile.html'">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-id-card"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">My Profile</div>
+            <div class="settings-item-desc">View and edit your personal information</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+    </div>
+
+    <!-- Appearance Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-palette"></i> Appearance</div>
+      
+      <!-- Dark/Light Mode -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-moon"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Dark Mode</div>
+            <div class="settings-item-desc">Toggle between dark and light theme</div>
+          </div>
+        </div>
+        <label class="settings-toggle">
+          <input type="checkbox" id="darkModeToggle" checked disabled>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- UI Size -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-expand"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">UI Size</div>
+            <div class="settings-item-desc">Adjust interface scale for better visibility</div>
+          </div>
+        </div>
+        <select class="settings-select" disabled>
+          <option>Default (100%)</option>
+          <option>Large (125%)</option>
+          <option>Extra Large (150%)</option>
+        </select>
+      </div>
+
+      <!-- Font Size -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-font"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Font Size</div>
+            <div class="settings-item-desc">Increase text size for visual accessibility</div>
+          </div>
+        </div>
+        <select class="settings-select" disabled>
+          <option>Default</option>
+          <option>Large</option>
+          <option>Extra Large</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Accessibility Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-universal-access"></i> Accessibility</div>
+      
+      <!-- Color Blind Mode -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-eye"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Color Blind Mode</div>
+            <div class="settings-item-desc">Adjust colors for different types of color blindness</div>
+          </div>
+        </div>
+        <select class="settings-select" disabled>
+          <option>Off</option>
+          <option>Protanopia (Red-Blind)</option>
+          <option>Deuteranopia (Green-Blind)</option>
+          <option>Tritanopia (Blue-Blind)</option>
+          <option>Achromatopsia (Total)</option>
+        </select>
+      </div>
+
+      <!-- Screen Reader / Speak Option -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-volume-high"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Voice Assistance</div>
+            <div class="settings-item-desc">Enable audio descriptions and voice navigation</div>
+          </div>
+        </div>
+        <label class="settings-toggle">
+          <input type="checkbox" disabled>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Privacy & Security Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-shield-halved"></i> Privacy & Security</div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-lock"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Privacy Settings</div>
+            <div class="settings-item-desc">Manage your data and privacy preferences</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-key"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Change Password</div>
+            <div class="settings-item-desc">Update your account password</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-fingerprint"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Two-Factor Authentication</div>
+            <div class="settings-item-desc">Add extra security to your account</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+    </div>
+
+    <!-- Legal Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-scale-balanced"></i> Legal & Policy</div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-file-contract"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Terms of Service</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-user-shield"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Privacy Policy</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-wheelchair"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Accessibility Policy</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-icon"><i class="fa-solid fa-cookie-bite"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label">Cookie Policy</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow"></i>
+      </div>
+    </div>
+
+    <!-- Account Actions Section -->
+    <div class="settings-section">
+      <div class="settings-section-title"><i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b;"></i> Account Actions</div>
+      <div class="settings-item danger">
+        <div class="settings-item-left">
+          <div class="settings-icon" style="background:rgba(255,107,107,0.1);color:#ff6b6b;"><i class="fa-solid fa-user-xmark"></i></div>
+          <div class="settings-item-info">
+            <div class="settings-item-label" style="color:#ff6b6b;">Delete Account</div>
+            <div class="settings-item-desc">Permanently remove your account and all data</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right settings-arrow" style="color:#ff6b6b;"></i>
+      </div>
+    </div>
+
+    <!-- Log Out Button -->
+    <div class="settings-logout-section">
+      <button class="settings-logout-btn" onclick="window.location.href='index.html'">
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+      </button>
+    </div>
+
+    <div class="settings-version">PWD Travel v1.0.0</div>
+
+  </div>
+</div>
+
+  <!-- MAP -->
+  <div class="map-area">
+    <div id="map"></div>
+    <div class="map-ui">
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search places..." autocomplete="off" oninput="clearTimeout(locSearchTimeout);locSearchTimeout=setTimeout(()=>doMainSearch(this.value),150)"/>
+        <button class="search-clear" id="searchClearBtn">✕</button>
+      </div>
+      <div class="search-dropdown" id="searchDropdown"></div>
+      <div class="map-controls">
+        <button class="ctrl-btn" id="homeBtn"><i class="fa-solid fa-house"></i> Home</button>
+        <button class="ctrl-btn" id="locationBtn"><i class="fa-solid fa-location-crosshairs"></i> Current location</button>
+        <div class="weather-widget" id="weatherWidgetBtn">
+          <i class="fa-solid fa-cloud" id="weatherIcon"></i>
+          <div>
+            <div class="weather-temp" id="weatherTemp">--°F</div>
+            <div class="weather-desc" id="weatherDesc">Fetching...</div>
+          </div>
+        </div>
+      </div>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomOut">−</button>
+      </div>
+      <div class="dark-toggle">
+        <button id="darkMapBtn"><i class="fa-solid fa-moon"></i> Dark Map</button>
+      </div>
+      <div class="location-toast" id="locationToast">
+        <i class="fa-solid fa-location-dot"></i> Location found!
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN WALL -->
+<div class="login-wall" id="loginWall">
+  <div class="login-wall-box">
+    <div class="login-wall-icon">🔒</div>
+    <h2>Login Required</h2>
+    <p>You must be logged in or signed up to access this feature and plan your barrier-free journey.</p>
+    <div class="login-wall-btns">
+      <button class="wall-btn-primary" onclick="window.location.href='index.html'">Log In / Sign Up</button>
+      <button class="wall-btn-secondary" onclick="closeLoginWall()">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEATHER PANEL -->
+<div class="weather-panel" id="weatherPanel">
+  <div class="weather-panel-header">
+    <h2>🌤 Weather</h2>
+    <button class="weather-close" onclick="closeWeatherPanel()">✕</button>
+  </div>
+  <div class="weather-main">
+    <div class="weather-main-icon" id="wpIcon">🌤</div>
+    <div class="weather-main-temp" id="wpTemp">--°F</div>
+    <div class="weather-main-desc" id="wpDesc">Fetching weather...</div>
+    <div class="weather-main-location" id="wpLocation">
+      <i class="fa-solid fa-location-dot" style="color:var(--accent);margin-right:4px;"></i>Detecting location...
+    </div>
+  </div>
+  <div class="weather-stats">
+    <div class="weather-stat-card"><div class="ws-icon"><i class="fa-solid fa-temperature-half"></i></div><div class="ws-label">Feels Like</div><div class="ws-val" id="wpFeels">--°F</div></div>
+    <div class="weather-stat-card"><div class="ws-icon"><i class="fa-solid fa-wind"></i></div><div class="ws-label">Wind Speed</div><div class="ws-val" id="wpWind">-- km/h</div></div>
+    <div class="weather-stat-card"><div class="ws-icon"><i class="fa-solid fa-droplet"></i></div><div class="ws-label">Humidity</div><div class="ws-val" id="wpHumidity">--%</div></div>
+    <div class="weather-stat-card"><div class="ws-icon"><i class="fa-solid fa-gauge"></i></div><div class="ws-label">Wind Dir.</div><div class="ws-val" id="wpWindDir" style="font-size:14px;">--°</div></div>
+  </div>
+  <p class="weather-section-title"><i class="fa-solid fa-rotate" style="margin-right:6px;"></i>Live data from Open-Meteo</p>
+  <button class="weather-refresh" id="weatherRefreshBtn"><i class="fa-solid fa-rotate"></i> Refresh Weather</button>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="booking-overlay" id="bookingOverlay">
+  <div class="booking-modal">
+
+    <div class="booking-header">
+      <div class="booking-header-left">
+        <div class="booking-header-icon">♿</div>
+        <div><h2>Book a Ride</h2><p>PWD-Certified Transport</p></div>
+      </div>
+      <button class="booking-close" onclick="closeBooking()">✕</button>
+    </div>
+
+    <!-- 5 STEP INDICATORS -->
+    <div class="booking-steps">
+      <div class="bk-step active" id="bk-ind-1"><div class="bk-step-circle">1</div><span>Trip</span></div>
+      <div class="bk-step-line" id="bk-line-1"></div>
+      <div class="bk-step" id="bk-ind-2"><div class="bk-step-circle">2</div><span>Personal</span></div>
+      <div class="bk-step-line" id="bk-line-2"></div>
+      <div class="bk-step" id="bk-ind-3"><div class="bk-step-circle">3</div><span>Driver</span></div>
+      <div class="bk-step-line" id="bk-line-3"></div>
+      <div class="bk-step" id="bk-ind-4"><div class="bk-step-circle">4</div><span>Fee</span></div>
+      <div class="bk-step-line" id="bk-line-4"></div>
+      <div class="bk-step" id="bk-ind-5"><div class="bk-step-circle">5</div><span>Confirm</span></div>
+    </div>
+
+    <div class="booking-body" id="bkBody">
+
+      <!-- STEP 1: Trip -->
+      <div class="bk-step-content active" id="bk-step-1">
+        <h3 class="bk-step-title">🗺 Trip Details</h3>
+        <div class="bk-two-col">
+          <div class="bk-col">
+            <div class="bk-group">
+              <label>Pickup Location</label>
+              <div class="bk-inp-wrap">
+                <i class="fa-solid fa-circle-dot" style="color:var(--accent)"></i>
+                <input type="text" id="bkFrom" placeholder="Where are you now?" style="display:none"/>
+              </div>
+              <button class="bk-loc-btn" id="bkFromBtn" type="button" onclick="openLocPicker('from')">
+                <i class="fa-solid fa-circle-dot" style="color:var(--accent)"></i>
+                <span id="bkFromLabel">Tap to pick pickup on map...</span>
+              </button>
+            </div>
+            <div class="bk-group">
+              <label>Drop-off Location</label>
+              <div class="bk-inp-wrap">
+                <i class="fa-solid fa-location-dot" style="color:#ff6b6b"></i>
+                <input type="text" id="bkTo" placeholder="Where are you going?" style="display:none"/>
+              </div>
+              <button class="bk-loc-btn" id="bkToBtn" type="button" onclick="openLocPicker('to')">
+                <i class="fa-solid fa-location-dot" style="color:#ff6b6b"></i>
+                <span id="bkToLabel">Tap to pick drop-off on map...</span>
+              </button>
+            </div>
+            <div class="bk-row">
+              <div class="bk-group">
+                <label>Date</label>
+                <div class="bk-inp-wrap">
+                  <i class="fa-solid fa-calendar"></i>
+                  <input type="date" id="bkDate"/>
+                </div>
+              </div>
+              <div class="bk-group">
+                <label>Time</label>
+                <div class="bk-inp-wrap">
+                  <i class="fa-solid fa-clock"></i>
+                  <input type="time" id="bkTime"/>
+                </div>
+              </div>
+            </div>
+            <div class="bk-group">
+              <label>Estimated Distance (km)</label>
+              <div class="bk-dist-auto" id="bkDistDisplay">
+                <i class="fa-solid fa-route"></i>
+                <span id="bkDistText">Pick both locations to auto-calculate</span>
+                <strong id="bkDistKm" style="margin-left:auto;font-size:15px;"></strong>
+              </div>
+              <input type="hidden" id="bkDist" value=""/>
+            </div>
+          </div>
+          <div class="bk-col">
+            <div class="bk-group">
+              <label>Type of Disability</label>
+              <div class="disability-chips">
+                <div class="bk-chip" data-value="Wheelchair User">🦽 Wheelchair User</div>
+                <div class="bk-chip" data-value="Walking Difficulty">🚶 Walking Difficulty</div>
+                <div class="bk-chip" data-value="Crutches / Walker">🩼 Crutches / Walker</div>
+                <div class="bk-chip" data-value="Amputee">🦾 Amputee</div>
+                <div class="bk-chip" data-value="Visual Impairment">👁 Visual Impairment</div>
+                <div class="bk-chip" data-value="Hearing Impairment">👂 Hearing Impairment</div>
+                <div class="bk-chip" data-value="Elderly Mobility">👴 Elderly Mobility</div>
+                <div class="bk-chip" data-value="Post-Surgery">🏥 Post-Surgery</div>
+              </div>
+              <input type="text" id="bkDisability" placeholder="Or describe your condition..."
+                style="margin-top:10px;width:100%;padding:13px 16px;background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:14px;outline:none;font-family:inherit;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
+            </div>
+            <div class="bk-group">
+              <label>Trip Description <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(Optional)</span></label>
+              <textarea id="bkDescription" placeholder="Special requirements, equipment needed (e.g. foldable wheelchair, oxygen tank, service animal)..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Personal -->
+      <div class="bk-step-content" id="bk-step-2">
+        <h3 class="bk-step-title">👤 Personal Information</h3>
+        <div class="bk-two-col">
+          <div class="bk-col">
+            <div class="bk-row">
+              <div class="bk-group"><label>First Name</label><input type="text" id="bkFirstName" placeholder="Juan"/></div>
+              <div class="bk-group"><label>Last Name</label><input type="text" id="bkLastName" placeholder="Dela Cruz"/></div>
+            </div>
+            <div class="bk-group">
+              <label>Contact Number</label>
+              <div class="bk-inp-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input type="tel" id="bkPhone" placeholder="+63 912 345 6789"/>
+              </div>
+            </div>
+            <div class="bk-group">
+              <label>Gender</label>
+              <div class="gender-options">
+                <label class="gender-opt"><input type="radio" name="bkGender" value="Male"/><span>♂ Male</span></label>
+                <label class="gender-opt"><input type="radio" name="bkGender" value="Female"/><span>♀ Female</span></label>
+                <label class="gender-opt"><input type="radio" name="bkGender" value="Prefer not to say"/><span>— Prefer not to say</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="bk-col">
+            <div class="bk-group">
+              <label>Driver Assistance Instructions</label>
+              <textarea id="bkInstructions" style="min-height:130px;" placeholder="How should the driver assist? (e.g. help folding wheelchair, speak slowly, support left side when walking)..."></textarea>
+            </div>
+            <div class="bk-group">
+              <label>Emergency Contact <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(Optional)</span></label>
+              <div class="bk-inp-wrap">
+                <i class="fa-solid fa-user-shield"></i>
+                <input type="text" id="bkEmergency" placeholder="Full Name — +63 912 345 6789"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Driver -->
+      <div class="bk-step-content" id="bk-step-3">
+        <h3 class="bk-step-title">🚗 Select a Driver</h3>
+        <div class="driver-filter-btns">
+          <button class="driver-filter-btn active" data-filter="best">⭐ Best Match</button>
+          <button class="driver-filter-btn" data-filter="closest">📍 Closest</button>
+          <button class="driver-filter-btn" data-filter="free">✅ Available Now</button>
+          <button class="driver-filter-btn" data-filter="all">👥 All</button>
+        </div>
+        <div class="driver-best-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-matched to your disability type</div>
+        <div class="driver-list" id="bkDriverList"></div>
+      </div>
+
+      <!-- STEP 4: Fee -->
+      <div class="bk-step-content" id="bk-step-4">
+        <h3 class="bk-step-title">💳 Fare & Fee Breakdown</h3>
+        <div class="bk-two-col">
+          <!-- Left: breakdown -->
+          <div class="bk-col">
+            <div class="fee-card">
+              <div class="fee-card-title"><i class="fa-solid fa-calculator"></i> Fare Breakdown</div>
+              <div class="fee-row">
+                <span class="fee-label"><i class="fa-solid fa-road"></i> Base Fare</span>
+                <span class="fee-value" id="feeBase">₱0.00</span>
+              </div>
+              <div class="fee-row">
+                <span class="fee-label"><i class="fa-solid fa-route"></i> Distance Charge</span>
+                <span class="fee-value" id="feeDist">₱0.00</span>
+              </div>
+              <div class="fee-row" id="feeWheelchairRow" style="display:none;">
+                <span class="fee-label"><i class="fa-solid fa-wheelchair"></i> Wheelchair Assist</span>
+                <span class="fee-value fee-extra" id="feeWheelchair">+ ₱0.00</span>
+              </div>
+              <div class="fee-row" id="feeMedicalRow" style="display:none;">
+                <span class="fee-label"><i class="fa-solid fa-kit-medical"></i> Medical / Mobility Aid</span>
+                <span class="fee-value fee-extra" id="feeMedical">+ ₱0.00</span>
+              </div>
+              <div class="fee-row" id="feeVisionRow" style="display:none;">
+                <span class="fee-label"><i class="fa-solid fa-eye-slash"></i> Sensory Assist</span>
+                <span class="fee-value fee-extra" id="feeVision">+ ₱0.00</span>
+              </div>
+              <div class="fee-row" id="feeElderlyRow" style="display:none;">
+                <span class="fee-label"><i class="fa-solid fa-person-cane"></i> Elderly Care</span>
+                <span class="fee-value fee-extra" id="feeElderly">+ ₱0.00</span>
+              </div>
+              <div class="fee-row" id="feeAddonRow" style="display:none;">
+                <span class="fee-label"><i class="fa-solid fa-plus-circle"></i> Add-on Services</span>
+                <span class="fee-value fee-extra" id="feeAddonVal">+ ₱0.00</span>
+              </div>
+              <div class="fee-divider"></div>
+              <div class="fee-row">
+                <span class="fee-label-total">Total Fare</span>
+                <span class="fee-value-total" id="feeTotal">₱0.00</span>
+              </div>
+            </div>
+            <div class="fee-note">
+              <i class="fa-solid fa-circle-info"></i>
+              Fares are estimates. Final amount may vary based on actual route and traffic. PWD discount rates may apply per RA 9442.
+            </div>
+          </div>
+          <!-- Right: add-ons + agree -->
+          <div class="bk-col">
+            <div class="fee-card">
+              <div class="fee-card-title"><i class="fa-solid fa-hand-holding-heart"></i> Special Care Add-ons</div>
+              <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6;">Select any extra services your journey needs. Small additional fees apply.</p>
+              <div class="addon-list">
+                <label class="addon-item">
+                  <input type="checkbox" class="addon-cb" data-label="Priority Boarding" data-fee="20"/>
+                  <div class="addon-info"><span class="addon-name">🚪 Priority Boarding</span><span class="addon-price">+ ₱20</span></div>
+                  <span class="addon-desc">Driver arrives 5 min early to assist boarding</span>
+                </label>
+                <label class="addon-item">
+                  <input type="checkbox" class="addon-cb" data-label="Door-to-Door Escort" data-fee="30"/>
+                  <div class="addon-info"><span class="addon-name">🚶 Door-to-Door Escort</span><span class="addon-price">+ ₱30</span></div>
+                  <span class="addon-desc">Driver walks you from door to vehicle and to destination</span>
+                </label>
+                <label class="addon-item">
+                  <input type="checkbox" class="addon-cb" data-label="Equipment Handling" data-fee="25"/>
+                  <div class="addon-info"><span class="addon-name">🧰 Equipment Handling</span><span class="addon-price">+ ₱25</span></div>
+                  <span class="addon-desc">Safe loading/unloading of medical equipment</span>
+                </label>
+                <label class="addon-item">
+                  <input type="checkbox" class="addon-cb" data-label="Companion Seat" data-fee="15"/>
+                  <div class="addon-info"><span class="addon-name">👥 Companion Seat</span><span class="addon-price">+ ₱15</span></div>
+                  <span class="addon-desc">Reserve a seat for your care companion</span>
+                </label>
+                <label class="addon-item">
+                  <input type="checkbox" class="addon-cb" data-label="Extended Wait Time" data-fee="20"/>
+                  <div class="addon-info"><span class="addon-name">⏱ Extended Wait Time</span><span class="addon-price">+ ₱20</span></div>
+                  <span class="addon-desc">Driver waits up to 15 extra minutes at pickup</span>
+                </label>
+              </div>
+            </div>
+            <div class="fee-agree">
+              <input type="checkbox" class="fee-agree-cb" id="bkFeeAgree"/>
+              <label for="bkFeeAgree">I understand and agree to the fare breakdown and any additional care fees listed above.</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: Confirm -->
+      <div class="bk-step-content" id="bk-step-5">
+        <h3 class="bk-step-title">✅ Confirm Booking</h3>
+        <div class="confirm-two-col">
+          <div class="confirm-section">
+            <h4>🗺 Trip</h4>
+            <div class="confirm-row"><span class="confirm-label">From</span><span class="confirm-value" id="cf-from">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">To</span><span class="confirm-value" id="cf-to">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Date & Time</span><span class="confirm-value" id="cf-datetime">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Disability</span><span class="confirm-value" id="cf-disability">—</span></div>
+          </div>
+          <div class="confirm-section">
+            <h4>👤 Passenger</h4>
+            <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value" id="cf-name">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Contact</span><span class="confirm-value" id="cf-phone">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Gender</span><span class="confirm-value" id="cf-gender">—</span></div>
+          </div>
+        </div>
+        <div class="confirm-two-col">
+          <div class="confirm-section">
+            <h4>🚗 Driver</h4>
+            <div class="confirm-driver-card">
+              <div class="confirm-driver-avatar" id="cf-driver-av">?</div>
+              <div>
+                <div style="font-size:15px;font-weight:700;color:#fff;" id="cf-driver-name">—</div>
+                <div style="font-size:13px;color:var(--text3);margin-top:4px;" id="cf-driver-meta">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="confirm-section">
+            <h4>💳 Fare Summary</h4>
+            <div class="confirm-row"><span class="confirm-label">Base + Distance</span><span class="confirm-value" id="cf-fare-base">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Care Fees</span><span class="confirm-value" id="cf-fare-care">—</span></div>
+            <div class="confirm-row"><span class="confirm-label">Add-ons</span><span class="confirm-value" id="cf-fare-addons">—</span></div>
+            <div class="confirm-row" style="border-top:1px solid rgba(0,212,232,0.3);margin-top:6px;padding-top:10px;">
+              <span class="confirm-label" style="color:var(--accent);font-weight:700;font-size:13px;">TOTAL</span>
+              <span class="confirm-value" style="color:var(--accent);font-size:18px;" id="cf-fare-total">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="terms-check">
+          <input type="checkbox" id="bkTerms"/>
+          <label for="bkTerms">I confirm all information is accurate and agree to the <a href="#">PWD Travel Terms of Service</a> and <a href="#">Inclusion Policy</a>.</label>
+        </div>
+      </div>
+
+    </div><!-- end bkBody -->
+
+    <!-- Success Screen -->
+    <div class="booking-success" id="bkSuccess">
+      <div class="success-icon">✅</div>
+      <h3>Booking Confirmed!</h3>
+      <p>Your PWD-certified driver has been notified and is on the way. A confirmation will be sent to you shortly.</p>
+      <div class="booking-ref" id="bkRef">PWD-000000</div>
+      <button class="btn-bk-next" style="width:100%;max-width:260px;" onclick="closeBooking()">
+        <i class="fa-solid fa-map"></i> Back to Map
+      </button>
+    </div>
+
+    <div class="booking-footer" id="bkFooter">
+      <button class="btn-bk-back" id="bkBtnBack" style="display:none;" onclick="bkPrev()">← Back</button>
+      <button class="btn-bk-next" id="bkBtnNext" onclick="bkNext()">Continue <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+  </div>
+</div><!-- end booking-overlay -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  /* ================================================
+     MAP
+  ================================================ */
+  const map = L.map('map', { zoomControl: false, center: [14.5995, 120.9842], zoom: 13 });
+  const standardTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 });
+  const darkTile    = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© CARTO', maxZoom: 19 });
+  standardTile.addTo(map);
+  let isDark = false;
+  setTimeout(() => map.invalidateSize(), 200);
+  window.addEventListener('resize', () => map.invalidateSize());
+
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+    setTimeout(() => map.invalidateSize(), 310);
+  });
+  document.getElementById('zoomIn').addEventListener('click',  () => map.zoomIn());
+  document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
+  document.getElementById('darkMapBtn').addEventListener('click', () => {
+    if (!isDark) { map.removeLayer(standardTile); darkTile.addTo(map); isDark = true; document.getElementById('darkMapBtn').innerHTML = '<i class="fa-solid fa-sun"></i> Light Map'; }
+    else         { map.removeLayer(darkTile); standardTile.addTo(map); isDark = false; document.getElementById('darkMapBtn').innerHTML = '<i class="fa-solid fa-moon"></i> Dark Map'; }
+  });
+
+  /* ================================================
+     LOCATION
+  ================================================ */
+  let userMarker = null, currentLat = null, currentLon = null;
+  function goToLocation() {
+    if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+    navigator.geolocation.getCurrentPosition(pos => {
+      currentLat = pos.coords.latitude; currentLon = pos.coords.longitude;
+      map.setView([currentLat, currentLon], 15);
+      if (userMarker) map.removeLayer(userMarker);
+      userMarker = L.circleMarker([currentLat, currentLon], { radius: 10, fillColor: '#00d4e8', color: '#fff', weight: 2, fillOpacity: 0.9 }).addTo(map).bindPopup('📍 You are here').openPopup();
+      const toast = document.getElementById('locationToast');
+      toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 3000);
+      fetchWeather(currentLat, currentLon);
+    }, () => alert('Unable to get location.'));
+  }
+  document.getElementById('locationBtn').addEventListener('click', goToLocation);
+  document.getElementById('homeBtn').addEventListener('click', goToLocation);
+
+  /* ================================================
+     WEATHER
+  ================================================ */
+  function fetchWeather(lat, lon) {
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m,apparent_temperature&temperature_unit=fahrenheit&windspeed_unit=kmh&timezone=auto`)
+      .then(r => r.json()).then(data => {
+        const w = data.current_weather, temp = Math.round(w.temperature), code = w.weathercode;
+        let desc='Clear Sky', iconCls='fa-solid fa-sun', emoji='☀️';
+        if(code===0){desc='Clear Sky';iconCls='fa-solid fa-sun';emoji='☀️';}
+        else if(code<=2){desc='Partly Cloudy';iconCls='fa-solid fa-cloud-sun';emoji='⛅';}
+        else if(code===3){desc='Overcast';iconCls='fa-solid fa-cloud';emoji='☁️';}
+        else if(code<=49){desc='Foggy';iconCls='fa-solid fa-smog';emoji='🌫️';}
+        else if(code<=59){desc='Drizzle';iconCls='fa-solid fa-cloud-drizzle';emoji='🌦️';}
+        else if(code<=69){desc='Rainy';iconCls='fa-solid fa-cloud-rain';emoji='🌧️';}
+        else if(code<=79){desc='Snowy';iconCls='fa-solid fa-snowflake';emoji='❄️';}
+        else if(code<=84){desc='Showers';iconCls='fa-solid fa-cloud-showers-heavy';emoji='🌨️';}
+        else{desc='Thunderstorm';iconCls='fa-solid fa-bolt';emoji='⛈️';}
+        document.getElementById('weatherTemp').textContent = `${temp}°F`;
+        document.getElementById('weatherDesc').textContent = desc;
+        document.getElementById('weatherIcon').className   = iconCls;
+        document.getElementById('wpTemp').textContent = `${temp}°F`;
+        document.getElementById('wpDesc').textContent = desc;
+        document.getElementById('wpIcon').textContent = emoji;
+        document.getElementById('wpWind').textContent = `${Math.round(w.windspeed)} km/h`;
+        document.getElementById('wpWindDir').textContent = `${w.winddirection}°`;
+        const hi = new Date().getHours();
+        document.getElementById('wpHumidity').textContent = `${data.hourly?.relativehumidity_2m?.[hi] ?? '--'}%`;
+        document.getElementById('wpFeels').textContent    = `${Math.round(data.hourly?.apparent_temperature?.[hi] ?? 0)}°F`;
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+          .then(r => r.json()).then(geo => {
+            const city = geo.address.city || geo.address.town || geo.address.municipality || 'Your Location';
+            document.getElementById('wpLocation').innerHTML = `<i class="fa-solid fa-location-dot" style="color:var(--accent);margin-right:4px;"></i>${city}, ${geo.address.country || ''}`;
+          }).catch(() => {});
+      }).catch(() => {
+        document.getElementById('weatherTemp').textContent = '--°F';
+        document.getElementById('weatherDesc').textContent = 'Unavailable';
+      });
+  }
+  function closeAllPanels() {
+    ['historyPanel', 'weatherPanel', 'settingsPanel'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    });
+  }
+
+  function openWeatherPanel()  { closeAllPanels(); document.getElementById('weatherPanel').classList.add('open'); }
+  function closeWeatherPanel() { document.getElementById('weatherPanel').classList.remove('open'); }
+  document.getElementById('navWeather').addEventListener('click', openWeatherPanel);
+  document.getElementById('weatherWidgetBtn').addEventListener('click', openWeatherPanel);
+  document.getElementById('weatherRefreshBtn').addEventListener('click', () => {
+    if (currentLat && currentLon) { document.getElementById('wpDesc').textContent = 'Refreshing...'; fetchWeather(currentLat, currentLon); }
+    else goToLocation();
+  });
+
+  /* ================================================
+     SEARCH
+  ================================================ */
+  const searchInput = document.getElementById('searchInput');
+  const searchDropdown = document.getElementById('searchDropdown');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  let searchTimeout = null, searchMarker = null;
+
+  function showDropdown(html) { searchDropdown.innerHTML = html; searchDropdown.style.display = 'block'; }
+  function hideDropdown()     { searchDropdown.style.display = 'none'; searchDropdown.innerHTML = ''; }
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    searchClearBtn.style.display = q ? 'block' : 'none';
+    clearTimeout(searchTimeout);
+    if (q.length < 2) { hideDropdown(); return; }
+    showDropdown(`<div class="search-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</div>`);
+    searchTimeout = setTimeout(() => {
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`)
+        .then(r => r.json()).then(results => {
+          if (!results.length) { showDropdown(`<div class="search-empty">😕 No results for "<b>${q}</b>"</div>`); return; }
+          showDropdown(results.map(r => `
+            <div class="search-result-item" data-lat="${r.lat}" data-lon="${r.lon}" data-name="${r.display_name.replace(/"/g,'&quot;')}">
+              <i class="fa-solid fa-location-dot"></i>
+              <div>
+                <div class="search-result-name">${r.name || r.display_name.split(',')[0]}</div>
+                <div class="search-result-sub">${r.display_name.split(',').slice(1,3).join(',').trim()}</div>
+              </div>
+            </div>`).join(''));
+          searchDropdown.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const lat = parseFloat(item.dataset.lat), lon = parseFloat(item.dataset.lon);
+              const short = item.dataset.name.split(',')[0];
+              map.setView([lat, lon], 16);
+              if (searchMarker) map.removeLayer(searchMarker);
+              searchMarker = L.marker([lat, lon]).addTo(map).bindPopup(`<b>📍 ${short}</b>`).openPopup();
+              searchInput.value = short; searchClearBtn.style.display = 'block'; hideDropdown();
+            });
+          });
+        }).catch(() => showDropdown(`<div class="search-empty">⚠️ Search failed.</div>`));
+    }, 400);
+  });
+  searchClearBtn.addEventListener('click', () => {
+    searchInput.value = ''; searchClearBtn.style.display = 'none'; hideDropdown();
+    if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
+    searchInput.focus();
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.search-bar') && !e.target.closest('#searchDropdown')) hideDropdown(); });
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { hideDropdown(); searchInput.blur(); } });
+
+  /* ================================================
+     LOGIN WALL
+  ================================================ */
+  function showLoginWall()  { document.getElementById('loginWall').classList.add('open'); }
+  function closeLoginWall() { document.getElementById('loginWall').classList.remove('open'); }
+  document.getElementById('loginWall').addEventListener('click', e => { if (e.target === document.getElementById('loginWall')) closeLoginWall(); });
+
+  const isGuest = new URLSearchParams(window.location.search).get('guest') === 'true';
+  if (isGuest) {
+    document.getElementById('profileItem').innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:2px 0;"><i class="fa-solid fa-user-slash" style="font-size:15px;color:var(--text3);width:20px;text-align:center;flex-shrink:0;"></i><span class="nav-label" style="font-size:12px;color:var(--text3);font-style:italic;white-space:nowrap;">Guest Mode</span></div>`;
+    document.getElementById('navUpdates').addEventListener('click', e => { e.stopImmediatePropagation(); showLoginWall(); }, true);
+    document.getElementById('navExplore').addEventListener('click', e => { e.stopImmediatePropagation(); showLoginWall(); }, true);
+    searchInput.addEventListener('focus', () => { showLoginWall(); searchInput.blur(); });
+  }
+
+  /* ================================================
+     BOOKING — 5 STEPS
+  ================================================ */
+  let bkStep = 1;
+  const BK_TOTAL = 5;
+  let bkSelectedDriver = null;
+  let bkSelectedDisability = '';
+
+  // Fare rates (₱)
+  const FARE = { base: 50, perKm: 12, wheelchair: 40, medical: 35, vision: 30, elderly: 25 };
+
+  const bkDrivers = [
+    { id:1, name:'Ricardo Santos', initials:'RS', rating:4.9, distance:0.8, eta:'3 min',  status:'free', tags:['Wheelchair Certified','CPR Trained'], trips:312, score:99 },
+    { id:2, name:'Maria Reyes',    initials:'MR', rating:4.8, distance:1.2, eta:'5 min',  status:'free', tags:['PWD Specialist','Sign Language'],     trips:245, score:95 },
+    { id:3, name:'Jose Villanueva',initials:'JV', rating:4.7, distance:2.1, eta:'8 min',  status:'free', tags:['Crutches Certified','Medical Transport'],trips:189,score:90 },
+    { id:4, name:'Ana Gonzales',   initials:'AG', rating:4.6, distance:3.4, eta:'12 min', status:'busy', tags:['Elderly Care','Gentle Driver'],       trips:156, score:85 },
+    { id:5, name:'Carlos Mendoza', initials:'CM', rating:4.5, distance:4.0, eta:'15 min', status:'free', tags:['General PWD'],                         trips:98,  score:80 }
+  ];
+
+  // Chips
+  document.querySelectorAll('.bk-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+      bkSelectedDisability = [...document.querySelectorAll('.bk-chip.selected')].map(c => c.dataset.value).join(', ');
+    });
+  });
+
+  // Driver filter buttons
+  document.querySelectorAll('.driver-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.driver-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      bkRenderDrivers(btn.dataset.filter);
+    });
+  });
+
+  function bkRenderDrivers(filter = 'best') {
+    let list = [...bkDrivers];
+    if      (filter === 'best')    list.sort((a,b) => b.score - a.score);
+    else if (filter === 'closest') list.sort((a,b) => a.distance - b.distance);
+    else if (filter === 'free')    list = list.filter(d => d.status === 'free');
+
+    document.getElementById('bkDriverList').innerHTML = list.map((d, i) => {
+      const isBest = filter === 'best' && i === 0;
+      const isSel  = bkSelectedDriver && bkSelectedDriver.id === d.id;
+      const statusTag  = d.status === 'free' ? `<span class="driver-tag green">● Available</span>` : `<span class="driver-tag orange">● Busy</span>`;
+      const extraTags  = d.tags.slice(0,2).map(t => `<span class="driver-tag">${t}</span>`).join('');
+      return `
+        <div class="driver-card ${isSel ? 'selected' : ''}" data-id="${d.id}" onclick="bkSelectDriver(${d.id})">
+          <div class="driver-radio"></div>
+          <div class="driver-avatar">${d.initials}</div>
+          <div class="driver-info">
+            <div class="driver-name">${d.name}${isBest ? ' ⭐' : ''}</div>
+            <div class="driver-tags">${statusTag}${extraTags}</div>
+          </div>
+          <div class="driver-right">
+            <div class="driver-rating">${d.rating} <i class="fa-solid fa-star"></i></div>
+            <div class="driver-dist">${d.distance} km · ${d.eta}</div>
+            <div class="driver-dist">${d.trips} trips</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function bkSelectDriver(id) {
+    bkSelectedDriver = bkDrivers.find(d => d.id === id);
+    document.querySelectorAll('.driver-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.id) === id));
+  }
+
+  // Fare calculation
+  function bkCalculateFare() {
+    const km  = parseFloat(document.getElementById('bkDist').value) || 1;
+    const dis = (bkSelectedDisability || document.getElementById('bkDisability').value).toLowerCase();
+
+    const baseFare  = FARE.base;
+    const distFare  = +(km * FARE.perKm).toFixed(2);
+    const needsWheel  = dis.includes('wheelchair');
+    const needsMed    = dis.includes('crutch') || dis.includes('amputee') || dis.includes('post-surgery') || dis.includes('walking difficulty');
+    const needsVision = dis.includes('visual') || dis.includes('hearing');
+    const needsElderly= dis.includes('elderly');
+
+    const wheelFee   = needsWheel   ? FARE.wheelchair : 0;
+    const medFee     = needsMed     ? FARE.medical    : 0;
+    const visionFee  = needsVision  ? FARE.vision     : 0;
+    const elderlyFee = needsElderly ? FARE.elderly    : 0;
+
+    let addonTotal = 0;
+    document.querySelectorAll('.addon-cb:checked').forEach(cb => { addonTotal += parseInt(cb.dataset.fee); });
+
+    const careFees = wheelFee + medFee + visionFee + elderlyFee;
+    const total    = baseFare + distFare + careFees + addonTotal;
+    const fmt = v => `₱${v.toFixed(2)}`;
+
+    document.getElementById('feeBase').textContent = fmt(baseFare);
+    document.getElementById('feeDist').textContent = fmt(distFare);
+
+    const toggle = (rowId, valId, val) => {
+      document.getElementById(rowId).style.display = val > 0 ? 'flex' : 'none';
+      document.getElementById(valId).textContent   = `+ ${fmt(val)}`;
+    };
+    toggle('feeWheelchairRow','feeWheelchair', wheelFee);
+    toggle('feeMedicalRow',   'feeMedical',    medFee);
+    toggle('feeVisionRow',    'feeVision',     visionFee);
+    toggle('feeElderlyRow',   'feeElderly',    elderlyFee);
+
+    if (addonTotal > 0) {
+      document.getElementById('feeAddonRow').style.display = 'flex';
+      document.getElementById('feeAddonVal').textContent   = `+ ${fmt(addonTotal)}`;
+    } else {
+      document.getElementById('feeAddonRow').style.display = 'none';
+    }
+
+    document.getElementById('feeTotal').textContent = fmt(total);
+    return { baseFare, distFare, careFees, addonTotal, total };
+  }
+
+  // Recalculate whenever an add-on changes
+  document.querySelectorAll('.addon-cb').forEach(cb => cb.addEventListener('change', bkCalculateFare));
+
+  // Step navigation
+  function bkGoToStep(step) {
+    document.querySelectorAll('.bk-step-content').forEach(s => s.classList.remove('active'));
+    document.getElementById(`bk-step-${step}`).classList.add('active');
+
+    for (let i = 1; i <= BK_TOTAL; i++) {
+      const ind    = document.getElementById(`bk-ind-${i}`);
+      const circle = ind.querySelector('.bk-step-circle');
+      ind.classList.remove('active', 'done');
+      if      (i < step)  { ind.classList.add('done');   circle.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;"></i>'; }
+      else if (i === step) { ind.classList.add('active'); circle.textContent = i; }
+      else                 { circle.textContent = i; }
+      const line = document.getElementById(`bk-line-${i}`);
+      if (line) line.classList.toggle('done', i < step);
+    }
+
+    document.getElementById('bkBtnBack').style.display = step > 1 ? 'block' : 'none';
+    const btnNext = document.getElementById('bkBtnNext');
+    if (step === BK_TOTAL) { btnNext.innerHTML = '✅ Confirm Booking'; btnNext.classList.add('confirm-btn'); }
+    else                   { btnNext.innerHTML = 'Continue <i class="fa-solid fa-arrow-right"></i>'; btnNext.classList.remove('confirm-btn'); }
+
+    bkStep = step;
+    document.getElementById('bkBody').scrollTop = 0;
+  }
+
+  function bkNext() {
+    // Validation per step
+    if (bkStep === 1) {
+      if (!document.getElementById('bkFrom').value.trim())     { alert('Please enter a pickup location.'); return; }
+      if (!document.getElementById('bkTo').value.trim())       { alert('Please enter a drop-off location.'); return; }
+      if (!document.getElementById('bkDate').value)            { alert('Please select a date.'); return; }
+      if (!document.getElementById('bkTime').value)            { alert('Please select a time.'); return; }
+      if (!(bkSelectedDisability || document.getElementById('bkDisability').value.trim())) { alert('Please select or describe your disability type.'); return; }
+      if (!document.getElementById('bkDist').value || parseFloat(document.getElementById('bkDist').value) <= 0) { alert('Please enter an estimated distance in km.'); return; }
+    }
+    if (bkStep === 2) {
+      if (!document.getElementById('bkFirstName').value.trim() || !document.getElementById('bkLastName').value.trim()) { alert('Please enter your full name.'); return; }
+      if (!document.getElementById('bkPhone').value.trim())     { alert('Please enter a contact number.'); return; }
+      if (!document.querySelector('input[name="bkGender"]:checked')) { alert('Please select your gender.'); return; }
+    }
+    if (bkStep === 3) {
+      if (!bkSelectedDriver) { alert('Please select a driver.'); return; }
+      bkCalculateFare(); // pre-calculate before showing fee step
+    }
+    if (bkStep === 4) {
+      bkCalculateFare(); // refresh totals
+      if (!document.getElementById('bkFeeAgree').checked) { alert('Please agree to the fare breakdown to continue.'); return; }
+      bkBuildConfirm();
+    }
+    if (bkStep === BK_TOTAL) {
+      if (!document.getElementById('bkTerms').checked) { alert('Please agree to the Terms of Service to confirm.'); return; }
+      bkSubmit(); return;
+    }
+    bkGoToStep(bkStep + 1);
+  }
+
+  function bkPrev() { if (bkStep > 1) bkGoToStep(bkStep - 1); }
+
+  function bkBuildConfirm() {
+    const dis    = bkSelectedDisability || document.getElementById('bkDisability').value;
+    const gender = document.querySelector('input[name="bkGender"]:checked');
+    const fees   = bkCalculateFare();
+    const fmt    = v => `₱${v.toFixed(2)}`;
+
+    document.getElementById('cf-from').textContent      = document.getElementById('bkFrom').value || '—';
+    document.getElementById('cf-to').textContent        = document.getElementById('bkTo').value   || '—';
+    document.getElementById('cf-datetime').textContent  = `${document.getElementById('bkDate').value} at ${document.getElementById('bkTime').value}`;
+    document.getElementById('cf-disability').textContent= dis || '—';
+    document.getElementById('cf-name').textContent      = `${document.getElementById('bkFirstName').value} ${document.getElementById('bkLastName').value}`;
+    document.getElementById('cf-phone').textContent     = document.getElementById('bkPhone').value || '—';
+    document.getElementById('cf-gender').textContent    = gender ? gender.value : '—';
+
+    if (bkSelectedDriver) {
+      document.getElementById('cf-driver-av').textContent   = bkSelectedDriver.initials;
+      document.getElementById('cf-driver-name').textContent = bkSelectedDriver.name;
+      document.getElementById('cf-driver-meta').textContent = `${bkSelectedDriver.rating}⭐ · ${bkSelectedDriver.distance} km away · ${bkSelectedDriver.trips} trips`;
+    }
+
+    document.getElementById('cf-fare-base').textContent   = fmt(fees.baseFare + fees.distFare);
+    document.getElementById('cf-fare-care').textContent   = fmt(fees.careFees);
+    document.getElementById('cf-fare-addons').textContent = fmt(fees.addonTotal);
+    document.getElementById('cf-fare-total').textContent  = fmt(fees.total);
+  }
+
+
+  function openBooking() {
+    // Reset all fields
+    bkStep = 1; bkSelectedDriver = null; bkSelectedDisability = ''; bkFromCoords = null; bkToCoords = null;
+    document.querySelectorAll('.bk-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.addon-cb').forEach(c => c.checked = false);
+    ['bkFrom','bkTo','bkDate','bkTime','bkDistance','bkDisability','bkDescription',
+     'bkFirstName','bkLastName','bkPhone','bkInstructions','bkEmergency'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.querySelectorAll('input[name="bkGender"]').forEach(r => r.checked = false);
+    document.getElementById('bkTerms').checked    = false;
+    document.getElementById('bkFeeAgree').checked = false;
+    document.getElementById('bkBody').style.display         = '';
+    document.getElementById('bkFooter').style.display       = '';
+    document.querySelector('.booking-steps').style.display  = '';
+    document.getElementById('bkSuccess').classList.remove('show');
+    document.getElementById('bkDate').valueAsDate = new Date();
+    bkGoToStep(1);
+    bkRenderDrivers('best');
+    document.getElementById('bookingOverlay').classList.add('open');
+  }
+
+  function closeBooking() {
+    document.getElementById('bookingOverlay').classList.remove('open');
+  }
+
+  document.getElementById('bookingOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('bookingOverlay')) closeBooking();
+  });
+
+  // Auto-load location on page load
+  goToLocation();
+
+  /* ===== BOOKING CONFIRMED SPLIT CARD ===== */
+  let bkcMapInstance = null;
+
+  function bkSubmit() {
+    const ref = 'PWD-' + Math.floor(100000 + Math.random() * 900000);
+    if (typeof bookingHistory !== 'undefined') {
+      const fromVal2 = document.getElementById('bkFrom').value || 'Origin';
+      const toVal2   = document.getElementById('bkTo').value   || 'Destination';
+      const fn2 = document.getElementById('bkFirstName').value || '';
+      const ln2 = document.getElementById('bkLastName').value  || '';
+      const f2  = (typeof bkCalculateFare === 'function') ? bkCalculateFare() : {total:0};
+      bookingHistory.unshift({
+        ref, status: 'completed',
+        from: fromVal2, to: toVal2,
+        datetime: (document.getElementById('bkDate').value || 'Today') + ' \u00b7 ' + (document.getElementById('bkTime').value || '--:--'),
+        passenger: (fn2 + ' ' + ln2).trim() || 'Passenger',
+        driver: (typeof bkSelectedDriver !== 'undefined' && bkSelectedDriver) ? bkSelectedDriver.name : '\u2014',
+        fareTotal: f2.total || 0
+      });
+    }
+    const f   = (typeof bkCalculateFare === 'function') ? bkCalculateFare() : { baseFare:50, distFare:0, careFees:0, addonTotal:0, total:50 };
+    const fmt = v => '\u20b1' + parseFloat(v).toFixed(2);
+
+    const fromVal   = document.getElementById('bkFrom').value    || 'Point A';
+    const toVal     = document.getElementById('bkTo').value      || 'Point B';
+    const dateVal   = document.getElementById('bkDate').value    || '';
+    const timeVal   = document.getElementById('bkTime').value    || '';
+    const firstName = document.getElementById('bkFirstName').value || 'Passenger';
+    const lastName  = document.getElementById('bkLastName').value  || '';
+    const fullName  = (firstName + ' ' + lastName).trim();
+    const disability = (typeof bkSelectedDisability !== 'undefined' ? bkSelectedDisability : '') ||
+                       document.getElementById('bkDisability').value || '\u2014';
+
+    if (typeof bookingHistory !== 'undefined') {
+      bookingHistory.unshift({
+        ref, status: 'active',
+        from: fromVal, to: toVal,
+        datetime: (dateVal ? new Date(dateVal + 'T00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'Today') + ' \u00b7 ' + (timeVal || '--:--'),
+        passenger: fullName,
+        disability,
+        driver: (typeof bkSelectedDriver !== 'undefined' && bkSelectedDriver)
+          ? bkSelectedDriver.name + ' \u00b7 ' + bkSelectedDriver.rating + '\u2b50'
+          : '\u2014',
+        fareBase: f.baseFare, fareDist: f.distFare,
+        fareCare: f.careFees, fareAddons: f.addonTotal, fareTotal: f.total
+      });
+    }
+
+    closeBooking();
+
+    document.getElementById('bkcRefChip').textContent     = ref;
+    document.getElementById('bkcOriginLabel').textContent = fromVal.split(',')[0];
+    document.getElementById('bkcDestLabel').textContent   = toVal.split(',')[0];
+    document.getElementById('bkcRiderAv').textContent     = fullName.charAt(0).toUpperCase();
+    document.getElementById('bkcRiderName').textContent   = fullName;
+    document.getElementById('bkcDisability').textContent  = disability;
+    document.getElementById('bkcPhone').textContent       = document.getElementById('bkPhone').value || '\u2014';
+    document.getElementById('bkcDatetime').textContent    = (dateVal || 'Today') + ' \u00b7 ' + (timeVal || '--:--');
+
+    if (typeof bkSelectedDriver !== 'undefined' && bkSelectedDriver) {
+      document.getElementById('bkcDriverAv').textContent   = bkSelectedDriver.init;
+      document.getElementById('bkcDriverName').textContent = bkSelectedDriver.name;
+      document.getElementById('bkcDriverMeta').textContent =
+        '\u2b50 ' + bkSelectedDriver.rating + ' \u00b7 ' + (bkSelectedDriver.dist || '< 1 km') + ' away';
+      const plates = ['ABC 1234','XYZ 5678','DEF 9012','GHI 3456','JKL 7890','MNO 2345'];
+      document.getElementById('bkcPlate').textContent = plates[(bkSelectedDriver.id - 1) % plates.length];
+    }
+
+    document.getElementById('bkcFareBase').textContent   = fmt(f.baseFare);
+    document.getElementById('bkcFareDist').textContent   = fmt(f.distFare);
+    document.getElementById('bkcFareCare').textContent   = f.careFees   > 0 ? fmt(f.careFees)   : '\u2014';
+    document.getElementById('bkcFareAddons').textContent = f.addonTotal > 0 ? fmt(f.addonTotal) : '\u2014';
+    document.getElementById('bkcFareTotal').textContent  = fmt(f.total);
+
+    document.getElementById('bkConfirmedOverlay').classList.add('open');
+
+    setTimeout(() => {
+      if (bkcMapInstance) { bkcMapInstance.remove(); bkcMapInstance = null; }
+      const geocode = q =>
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=1')
+          .then(r => r.json()).then(d => d[0] ? [parseFloat(d[0].lat), parseFloat(d[0].lon)] : null);
+
+      const preA = (typeof bkFromCoords !== 'undefined') ? bkFromCoords : null;
+      const preB = (typeof bkToCoords   !== 'undefined') ? bkToCoords   : null;
+      Promise.all([preA ? Promise.resolve(preA) : geocode(fromVal), preB ? Promise.resolve(preB) : geocode(toVal)]).then(([coordA, coordB]) => {
+        const A = coordA || [7.1636, 122.00];
+        const B = coordB || [7.18,   122.05];
+
+        bkcMapInstance = L.map('bkcMap', { zoomControl: false, attributionControl: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })
+          .addTo(bkcMapInstance);
+        bkcMapInstance.fitBounds(L.latLngBounds([A, B]), { padding: [60, 60] });
+
+        // Try OSRM road-following route
+        const [aLat2, aLon2] = A, [bLat2, bLon2] = B;
+        fetch('https://router.project-osrm.org/route/v1/driving/' + aLon2 + ',' + aLat2 + ';' + bLon2 + ',' + bLat2 + '?overview=full&geometries=geojson')
+          .then(r2 => r2.json()).then(rd => {
+            if (rd.routes && rd.routes[0]) {
+              const coords = rd.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+              L.polyline(coords, { color: 'rgba(0,212,232,0.18)', weight: 14, opacity: 1 }).addTo(bkcMapInstance);
+              L.polyline(coords, { color: '#00d4e8', weight: 4, opacity: 0.95 }).addTo(bkcMapInstance);
+              bkcMapInstance.fitBounds(L.latLngBounds(coords), { padding: [60, 60] });
+            } else {
+              L.polyline([A, B], { color: 'rgba(0,212,232,0.18)', weight: 14 }).addTo(bkcMapInstance);
+              L.polyline([A, B], { color: '#00d4e8', weight: 3, dashArray: '10, 8' }).addTo(bkcMapInstance);
+            }
+          }).catch(() => {
+            L.polyline([A, B], { color: 'rgba(0,212,232,0.18)', weight: 14 }).addTo(bkcMapInstance);
+            L.polyline([A, B], { color: '#00d4e8', weight: 3, dashArray: '10, 8' }).addTo(bkcMapInstance);
+          });
+
+        L.marker(A, { icon: L.divIcon({ className: '',
+          html: '<div style="width:16px;height:16px;border-radius:50%;background:#00d4e8;border:3px solid #fff;box-shadow:0 0 16px rgba(0,212,232,0.9);"></div>',
+          iconSize: [16,16], iconAnchor: [8,8] })}).addTo(bkcMapInstance);
+
+        L.marker(B, { icon: L.divIcon({ className: '',
+          html: '<div style="width:16px;height:16px;border-radius:50%;background:#ff6b6b;border:3px solid #fff;box-shadow:0 0 16px rgba(255,107,107,0.9);"></div>',
+          iconSize: [16,16], iconAnchor: [8,8] })}).addTo(bkcMapInstance);
+
+        bkcMapInstance.invalidateSize();
+      }).catch(() => {
+        bkcMapInstance = L.map('bkcMap', { zoomControl: false, attributionControl: false, center: [7.1636, 122.0], zoom: 13 });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(bkcMapInstance);
+        bkcMapInstance.invalidateSize();
+      });
+    }, 350);
+  }
+
+  function closeBkcCard() {
+    document.getElementById('bkConfirmedOverlay').classList.remove('open');
+    if (bkcMapInstance) { bkcMapInstance.remove(); bkcMapInstance = null; }
+  }
+
+
+  /* ===== LOCATION PICKER + OSRM ROUTING ===== */
+  let locPickerMap = null, locPickerMarker = null;
+  let locPickerMode = 'from'; // 'from' or 'to'
+  let locPickerCoords = null, locPickerName = '';
+  let bkFromCoords = null, bkToCoords = null;
+
+  function openLocPicker(mode) {
+    locPickerMode = mode;
+    locPickerCoords = null; locPickerName = '';
+    document.getElementById('locPickerChosenLabel').textContent = 'No location selected';
+    document.getElementById('locPickerConfirmBtn').disabled = true;
+    document.getElementById('locPickerTitle').innerHTML =
+      '<i class="fa-solid fa-map-pin" style="color:var(--accent);margin-right:8px;"></i>' +
+      (mode === 'from' ? 'Pick Pickup Location' : 'Pick Drop-off Location');
+    document.getElementById('locPickerOverlay').classList.add('open');
+
+    setTimeout(() => {
+      if (locPickerMap) { locPickerMap.remove(); locPickerMap = null; locPickerMarker = null; }
+      locPickerMap = L.map('locPickerMap', { zoomControl: true, attributionControl: false,
+        center: [7.1636, 122.00], zoom: 13 });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })
+        .addTo(locPickerMap);
+
+      // If we have a previous coord for this mode, center on it
+      const existing = mode === 'from' ? bkFromCoords : bkToCoords;
+      if (existing) {
+        locPickerMap.setView(existing, 15);
+        setLocPickerMarker(existing[0], existing[1]);
+      }
+
+      locPickerMap.on('click', e => {
+        setLocPickerMarker(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng).then(name => {
+          locPickerName = name;
+          document.getElementById('locPickerChosenLabel').textContent = name;
+          document.getElementById('locPickerConfirmBtn').disabled = false;
+        });
+      });
+      locPickerMap.invalidateSize();
+    }, 200);
+  }
+
+  function setLocPickerMarker(lat, lng) {
+    locPickerCoords = [lat, lng];
+    if (locPickerMarker) locPickerMarker.remove();
+    locPickerMarker = L.marker([lat, lng], {
+      icon: L.divIcon({ className: '',
+        html: '<div style="width:20px;height:20px;border-radius:50%;background:' +
+              (locPickerMode === 'from' ? '#00d4e8' : '#ff6b6b') +
+              ';border:3px solid #fff;box-shadow:0 0 12px rgba(0,0,0,0.6);"></div>',
+        iconSize: [20,20], iconAnchor: [10,10] })
+    }).addTo(locPickerMap);
+  }
+
+  function reverseGeocode(lat, lng) {
+    return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json')
+      .then(r => r.json())
+      .then(d => d.display_name ? d.display_name.split(',').slice(0,3).join(', ') : lat.toFixed(5) + ', ' + lng.toFixed(5))
+      .catch(() => lat.toFixed(5) + ', ' + lng.toFixed(5));
+  }
+
+  
+  function getCurrentLocation() {
+    if (!navigator.geolocation) {
+      alert('Geolocation not supported');
+      return;
+    }
+    locPickerMap.locate({ setView: true, maxZoom: 16, timeout: 10000 });
+    locPickerMap.once('locationfound', e => {
+      setLocPickerMarker(e.latlng.lat, e.latlng.lng);
+      reverseGeocode(e.latlng.lat, e.latlng.lng).then(name => {
+        locPickerName = name;
+        document.getElementById('locPickerChosenLabel').textContent = name;
+        document.getElementById('locPickerConfirmBtn').disabled = false;
+      });
+    });
+    locPickerMap.once('locationerror', () => {
+      alert('Could not get your location. Please allow location access.');
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('locPickerOverlay').classList.contains('open'))
+      locPickerSearch();
+  });
+  /* ===== LOCATION AUTOSUGGEST ===== */
+  let locSearchTimeout = null;
+  const SEARCH_DEBOUNCE = 150;
+
+  // Location picker autosuggest
+  document.addEventListener('DOMContentLoaded', () => {
+    const pickerInput = document.getElementById('locPickerSearchInput');
+    if (pickerInput) {
+      pickerInput.addEventListener('input', e => {
+        clearTimeout(locSearchTimeout);
+        locSearchTimeout = setTimeout(() => doLocPickerSearch(e.target.value), SEARCH_DEBOUNCE);
+      });
+      pickerInput.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLocPicker();
+        if (e.key === 'Enter') locPickerSearch();
+      });
+    }
+  });
+
+  function doLocPickerSearch(query) {
+    const dropdown = document.getElementById('locPickerDropdown');
+    if (!query || query.length < 2) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = '<div class="loc-picker-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</div>';
+    dropdown.classList.add('open');
+
+    // Get the current map viewport center to bias results to what user sees
+    let lat_bias = 7.1636, lon_bias = 122.00, bbox = '116,5,127,21';
+    if (locPickerMap) {
+      const center = locPickerMap.getCenter();
+      const bounds = locPickerMap.getBounds();
+      lat_bias = center.lat;
+      lon_bias = center.lng;
+      // Use tight bbox from current viewport so results are within the visible map area
+      const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+      bbox = `${sw.lng.toFixed(4)},${sw.lat.toFixed(4)},${ne.lng.toFixed(4)},${ne.lat.toFixed(4)}`;
+    }
+
+    // Photon API with viewport bbox — results prioritized to what user sees on map
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=7&lang=en&lat=${lat_bias}&lon=${lon_bias}&bbox=${bbox}`)
+      .then(r => r.json())
+      .then(data => {
+        const features = data.features || [];
+        if (!features.length) {
+          // Widen search to Philippines if nothing in viewport
+          return fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=7&lang=en&lat=${lat_bias}&lon=${lon_bias}&bbox=116,5,127,21`)
+            .then(r => r.json())
+            .then(d => renderLocResults(d.features || [], dropdown));
+        }
+        renderLocResults(features, dropdown);
+      })
+      .catch(() => {
+        dropdown.innerHTML = '<div class="loc-picker-empty">Search failed. Tap the map to pin location.</div>';
+      });
+  }
+
+  function renderLocResults(features, dropdown) {
+    if (!features.length) {
+      dropdown.innerHTML = '<div class="loc-picker-empty"><i class="fa-solid fa-magnifying-glass" style="margin-right:6px;"></i>No places found nearby. Try zooming out on the map first.</div>';
+      return;
+    }
+    dropdown.innerHTML = features.map(f => {
+      const p = f.properties;
+      const name = p.name || p.street || p.city || 'Unknown';
+      const parts = [p.street, p.city, p.state].filter(Boolean);
+      const sub = parts.join(', ') || p.country || '';
+      const lat = f.geometry.coordinates[1];
+      const lon = f.geometry.coordinates[0];
+      const icon = p.osm_value === 'hospital' || p.osm_value === 'clinic' ? 'fa-hospital' :
+                   p.osm_value === 'school' || p.osm_value === 'university' ? 'fa-graduation-cap' :
+                   p.osm_value === 'fast_food' || p.osm_value === 'restaurant' || p.osm_value === 'cafe' ? 'fa-utensils' :
+                   p.osm_value === 'mall' || p.osm_value === 'supermarket' || p.osm_value === 'convenience' ? 'fa-bag-shopping' :
+                   p.osm_value === 'fuel' ? 'fa-gas-pump' :
+                   p.osm_value === 'pharmacy' ? 'fa-pills' :
+                   p.type === 'street' ? 'fa-road' : 'fa-location-dot';
+      return `<div class="loc-picker-result-item" onclick="selectLocPicker(${lat}, ${lon}, '${(name + (sub ? ', ' + sub : '')).replace(/'/g,"\'")}')">
+        <i class="fa-solid ${icon} loc-picker-result-icon"></i>
+        <div class="loc-picker-result-main">
+          <div class="loc-picker-result-name">${name}</div>
+          <div class="loc-picker-result-sub">${sub}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectLocPicker(lat, lon, name) {
+    locPickerMap.setView([lat, lon], 16);
+    setLocPickerMarker(lat, lon);
+    locPickerName = name;
+    document.getElementById('locPickerChosenLabel').textContent = name;
+    document.getElementById('locPickerConfirmBtn').disabled = false;
+    document.getElementById('locPickerDropdown').classList.remove('open');
+    document.getElementById('locPickerSearchInput').value = '';
+  }
+
+  // Update locPickerSearch to use new search with Zamboanga context
+  function locPickerSearch() {
+    const q = document.getElementById('locPickerSearchInput').value.trim();
+    if (!q) return;
+    doLocPickerSearch(q);
+  }
+
+  // Main map search autosuggest (already exists, but improve it)
+  const mainSearchInput = document.getElementById('searchInput');
+  if (mainSearchInput) {
+    mainSearchInput.addEventListener('input', e => {
+      clearTimeout(locSearchTimeout);
+      locSearchTimeout = setTimeout(() => doMainSearch(e.target.value), SEARCH_DEBOUNCE);
+    });
+  }
+
+  function doMainSearch(query) {
+    const dropdown = document.getElementById('searchDropdown');
+    if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
+    dropdown.style.display = 'block';
+    dropdown.innerHTML = '<div class="search-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</div>';
+
+    // Bias to what user currently sees on the main map
+    let lat_bias = 7.1636, lon_bias = 122.00, bbox = '116,5,127,21';
+    if (typeof map !== 'undefined' && map.getCenter) {
+      const center = map.getCenter();
+      const bounds = map.getBounds();
+      lat_bias = center.lat;
+      lon_bias = center.lng;
+      const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+      bbox = `${sw.lng.toFixed(4)},${sw.lat.toFixed(4)},${ne.lng.toFixed(4)},${ne.lat.toFixed(4)}`;
+    }
+
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=en&lat=${lat_bias}&lon=${lon_bias}&bbox=${bbox}`)
+      .then(r => r.json())
+      .then(data => {
+        const features = data.features || [];
+        if (!features.length) {
+          return fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=en&lat=${lat_bias}&lon=${lon_bias}&bbox=116,5,127,21`)
+            .then(r => r.json())
+            .then(d => renderMainResults(d.features || [], dropdown));
+        }
+        renderMainResults(features, dropdown);
+      })
+      .catch(() => {
+        dropdown.innerHTML = '<div class="search-empty">Search unavailable</div>';
+      });
+  }
+
+  function renderMainResults(features, dropdown) {
+    if (!features.length) {
+      dropdown.innerHTML = '<div class="search-empty">No places found nearby</div>';
+      return;
+    }
+    dropdown.innerHTML = features.map(f => {
+      const p = f.properties;
+      const name = p.name || p.street || p.city || 'Unknown';
+      const sub = [p.city, p.state].filter(Boolean).join(', ');
+      const lat = f.geometry.coordinates[1];
+      const lon = f.geometry.coordinates[0];
+      return `<div class="search-result-item" onclick="selectMainSearch(${lat},${lon},'${name.replace(/'/g,"\'")}')">
+        <i class="fa-solid fa-location-dot"></i>
+        <div>
+          <div class="search-result-name">${name}</div>
+          <div class="search-result-sub">${sub}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectMainSearch(lat, lon, name) {
+    map.setView([lat, lon], 16);
+    if (window.currentMarker) currentMarker.remove();
+    currentMarker = L.marker([lat, lon]).addTo(map);
+    document.getElementById('searchInput').value = name;
+    document.getElementById('searchDropdown').classList.remove('open');
+  }
+
+
+
+
+  function confirmLocPicker() {
+    if (!locPickerCoords) return;
+    if (locPickerMode === 'from') {
+      bkFromCoords = locPickerCoords;
+      document.getElementById('bkFrom').value = locPickerName;
+      const btn = document.getElementById('bkFromBtn');
+      if (btn) { btn.querySelector('span').textContent = locPickerName; btn.classList.add('has-value'); }
+    } else {
+      bkToCoords = locPickerCoords;
+      document.getElementById('bkTo').value = locPickerName;
+      const btn = document.getElementById('bkToBtn');
+      if (btn) { btn.querySelector('span').textContent = locPickerName; btn.classList.add('has-value'); }
+    }
+    closeLocPicker();
+    if (bkFromCoords && bkToCoords) calcAutoDistance();
+  }
+
+  function closeLocPicker() {
+    document.getElementById('locPickerOverlay').classList.remove('open');
+    if (locPickerMap) { locPickerMap.remove(); locPickerMap = null; locPickerMarker = null; }
+  }
+
+  function calcAutoDistance() {
+    if (!bkFromCoords || !bkToCoords) return;
+    const distText = document.getElementById('bkDistText');
+    const distKm   = document.getElementById('bkDistKm');
+    const distInp  = document.getElementById('bkDist');
+    distText.textContent = 'Calculating road distance...';
+    distKm.textContent = '';
+
+    const [aLat, aLon] = bkFromCoords, [bLat, bLon] = bkToCoords;
+
+    // Haversine fallback (straight-line × 1.35 road factor approximation)
+    function haversineKm() {
+      const R = 6371, toRad = d => d * Math.PI / 180;
+      const dLat = toRad(bLat - aLat), dLon = toRad(bLon - aLon);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function setResult(km, label) {
+      const rounded = parseFloat(km).toFixed(1);
+      distInp.value = rounded;
+      distText.textContent = label;
+      distKm.textContent = rounded + ' km';
+      // Also update fare if already on fee step
+      if (typeof calcFare === 'function') calcFare();
+    }
+
+    function fallbackHaversine() {
+      const raw = haversineKm();
+      // Road distance is typically 1.2–1.4x straight-line; use 1.3 factor
+      const km = (raw * 1.3).toFixed(1);
+      setResult(km, 'Est. road distance:');
+    }
+
+    // Primary: OSRM public routing (accurate road distance, same engine as OpenStreetMap)
+    const osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' +
+      aLon + ',' + aLat + ';' + bLon + ',' + bLat +
+      '?overview=false&steps=false';
+
+    fetch(osrmUrl, { signal: AbortSignal.timeout(8000) })
+      .then(r => { if (!r.ok) throw new Error('OSRM error'); return r.json(); })
+      .then(d => {
+        if (d.code === 'Ok' && d.routes && d.routes[0]) {
+          const km = (d.routes[0].distance / 1000).toFixed(1);
+          setResult(km, 'Road distance (accurate):');
+        } else {
+          fallbackHaversine();
+        }
+      })
+      .catch(() => {
+        // Secondary fallback: OSRM demo server
+        fetch('https://routing.openstreetmap.de/routed-car/route/v1/driving/' +
+          aLon + ',' + aLat + ';' + bLon + ',' + bLat + '?overview=false',
+          { signal: AbortSignal.timeout(8000) })
+          .then(r => r.json())
+          .then(d => {
+            if (d.code === 'Ok' && d.routes && d.routes[0]) {
+              const km = (d.routes[0].distance / 1000).toFixed(1);
+              setResult(km, 'Road distance (accurate):');
+            } else {
+              fallbackHaversine();
+            }
+          })
+          .catch(() => fallbackHaversine());
+      });
+  }
+
+
+
+  /* ===== HISTORY PANEL ===== */
+  let bookingHistory = [];
+
+  function openHistoryPanel() {
+    closeAllPanels();
+    renderHistoryList();
+    document.getElementById('historyPanel').classList.add('open');
+  }
+  function closeHistoryPanel() {
+    document.getElementById('historyPanel').classList.remove('open');
+  }
+
+  document.getElementById('navHistory').addEventListener('click', openHistoryPanel);
+
+
+  /* ===== HISTORY SAMPLE DATA + DETAIL ===== */
+
+  // Pre-populate with sample bookings
+  bookingHistory = [
+    {
+      ref: 'PWD-184720', status: 'completed',
+      from: 'Zamboanga City Hall', to: 'Zamboanga City Medical Center',
+      datetime: '2026-03-10 \u00b7 08:45', bookedOn: 'March 10, 2026',
+      passenger: 'Klint Vincent Lloren', contact: '+63 912 345 6789',
+      disability: 'Wheelchair User',
+      driver: 'Ricardo Santos', vehicle: 'Toyota Innova \u00b7 ABC 1234',
+      fareBase: 50, fareDist: 180, fareCare: 40, fareAddons: 0, fareTotal: 270
+    },
+    {
+      ref: 'PWD-093312', status: 'completed',
+      from: 'Ateneo de Zamboanga University', to: 'Zamboanga International Airport',
+      datetime: '2026-03-08 \u00b7 14:20', bookedOn: 'March 8, 2026',
+      passenger: 'Klint Vincent Lloren', contact: '+63 912 345 6789',
+      disability: 'Crutches / Walker, Post-Surgery',
+      driver: 'Maria Reyes', vehicle: 'Honda City \u00b7 XYZ 5678',
+      fareBase: 50, fareDist: 320, fareCare: 75, fareAddons: 30, fareTotal: 475
+    },
+    {
+      ref: 'PWD-761540', status: 'completed',
+      from: 'Rio Hondo, Zamboanga City', to: 'Zamboanga City Mall',
+      datetime: '2026-03-05 \u00b7 10:00', bookedOn: 'March 5, 2026',
+      passenger: 'Klint Vincent Lloren', contact: '+63 912 345 6789',
+      disability: 'Visual Impairment',
+      driver: 'Jose Villanueva', vehicle: 'Mitsubishi Xpander \u00b7 DEF 9012',
+      fareBase: 50, fareDist: 140, fareCare: 40, fareAddons: 20, fareTotal: 250
+    },
+    {
+      ref: 'PWD-442891', status: 'cancelled',
+      from: 'Canelar, Zamboanga City', to: 'Pilar, Zamboanga City',
+      datetime: '2026-02-28 \u00b7 09:15', bookedOn: 'February 28, 2026',
+      passenger: 'Klint Vincent Lloren', contact: '+63 912 345 6789',
+      disability: 'Elderly Mobility',
+      driver: 'Ana Gonzales', vehicle: 'Toyota Vios \u00b7 GHI 3456',
+      fareBase: 50, fareDist: 90, fareCare: 35, fareAddons: 0, fareTotal: 175
+    },
+    {
+      ref: 'PWD-330075', status: 'completed',
+      from: 'Tetuan, Zamboanga City', to: 'San Roque Hospital',
+      datetime: '2026-02-20 \u00b7 16:30', bookedOn: 'February 20, 2026',
+      passenger: 'Klint Vincent Lloren', contact: '+63 912 345 6789',
+      disability: 'Amputee, Crutches / Walker',
+      driver: 'Carlos Mendoza', vehicle: 'Toyota Innova \u00b7 JKL 7890',
+      fareBase: 50, fareDist: 210, fareCare: 75, fareAddons: 25, fareTotal: 360
+    }
+  ];
+
+  function openHistoryDetail(idx) {
+    const b = bookingHistory[idx];
+    if (!b) return;
+    document.getElementById('hdRef').textContent        = b.ref;
+    document.getElementById('hdBookedOn').textContent   = 'Booked on ' + (b.bookedOn || b.datetime);
+    document.getElementById('hdFrom').textContent       = b.from;
+    document.getElementById('hdTo').textContent         = b.to;
+    document.getElementById('hdPassenger').textContent  = b.passenger;
+    document.getElementById('hdContact').textContent    = b.contact || '\u2014';
+    document.getElementById('hdDatetime').textContent   = b.datetime;
+    document.getElementById('hdDisability').textContent = b.disability || '\u2014';
+    document.getElementById('hdDriver').textContent     = b.driver;
+    document.getElementById('hdVehicle').textContent    = b.vehicle || 'Car';
+    const fmt = v => '\u20b1' + parseFloat(v || 0).toFixed(2);
+    document.getElementById('hdFareRows').innerHTML = `
+      <div class="hd-fare-row"><span>Base Fare</span><span>${fmt(b.fareBase)}</span></div>
+      <div class="hd-fare-row"><span>Distance Charge</span><span>${fmt(b.fareDist)}</span></div>
+      <div class="hd-fare-row"><span>Care / Accessibility Fee</span><span>${fmt(b.fareCare)}</span></div>
+      ${b.fareAddons > 0 ? `<div class="hd-fare-row"><span>Add-on Services</span><span>${fmt(b.fareAddons)}</span></div>` : ''}
+      <div class="hd-fare-row"><span>PWD Discount</span><span style="color:#00c864;">\u2212\u20b10</span></div>
+    `;
+    document.getElementById('hdFareTotal').textContent = fmt(b.fareTotal);
+    const chip = document.getElementById('hdStatusChip');
+    chip.className = 'hd-status-chip ' + b.status;
+    chip.innerHTML = b.status === 'completed'
+      ? '<i class="fa-solid fa-check"></i> Completed'
+      : b.status === 'active'
+      ? '<i class="fa-solid fa-circle" style="font-size:8px;"></i> Active'
+      : '<i class="fa-solid fa-xmark"></i> Cancelled';
+    document.getElementById('historyDetailOverlay').classList.add('open');
+  }
+
+  function closeHistoryDetail() {
+    document.getElementById('historyDetailOverlay').classList.remove('open');
+  }
+
+  // Override renderHistoryList to make items clickable with detail
+  function renderHistoryList() {
+    var list = document.getElementById('historyList');
+    if (!list) return; {
+      list.innerHTML = '<div class="history-empty"><i class="fa-solid fa-clock-rotate-left"></i>No bookings yet.<br>Your completed rides will appear here.</div>';
+      return;
+    }
+    list.innerHTML = bookingHistory.map((b, i) => `
+      <div class="history-item" onclick="openHistoryDetail(${i})">
+        <div class="history-item-top">
+          <span class="history-ref">${b.ref}</span>
+          <span class="history-status-badge ${b.status}">${b.status}</span>
+        </div>
+        <div class="history-route">
+          <span>${b.from.split(',')[0]}</span>
+          <i class="fa-solid fa-arrow-right"></i>
+          <span>${b.to.split(',')[0]}</span>
+        </div>
+        <div class="history-meta"><i class="fa-solid fa-calendar" style="margin-right:5px;color:var(--accent);"></i>${b.datetime}</div>
+        <div class="history-meta"><i class="fa-solid fa-car" style="margin-right:5px;color:var(--accent);"></i>${b.driver}</div>
+        <div class="history-fare">&#x20b1;${parseFloat(b.fareTotal).toFixed(2)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Run on page load so samples show immediately
+  renderHistoryList();
+
+
+  document.addEventListener('click', e => {
+    const d = document.getElementById('locPickerDropdown');
+    if (d && !d.contains(e.target) && e.target.id !== 'locPickerSearchInput') {
+      d.classList.remove('open');
+    }
+    const sd = document.getElementById('searchDropdown');
+    if (sd && !sd.contains(e.target) && e.target.id !== 'searchInput') {
+      sd.style.display = 'none';
+    }
+  });
+
+
+  /* ===== USER PROFILE ===== */
+  let userProfile = {
+    firstName: '', lastName: '', age: '', gender: '', dob: '',
+    phone: '', email: '', address: '',
+    disabilityType: '', pwdId: '', notes: '',
+    emergencyName: '', emergencyPhone: '', emergencyRel: '',
+    verificationStatus: 'unverified', profileComplete: false
+  };
+
+  function openProfilePanel() {
+    loadProfileFields();
+    document.getElementById('profilePanel').classList.add('open');
+    document.getElementById('ppIncompleteWarn').style.display = 'none';
+  }
+  function closeProfilePanel() {
+    document.getElementById('profilePanel').classList.remove('open');
+  }
+
+  function loadProfileFields() {
+    document.getElementById('ppFirstName').value    = userProfile.firstName;
+    document.getElementById('ppLastName').value     = userProfile.lastName;
+    document.getElementById('ppAge').value          = userProfile.age;
+    document.getElementById('ppGender').value       = userProfile.gender;
+    document.getElementById('ppDob').value          = userProfile.dob;
+    document.getElementById('ppPhone').value        = userProfile.phone;
+    document.getElementById('ppEmail').value        = userProfile.email;
+    document.getElementById('ppAddress').value      = userProfile.address;
+    document.getElementById('ppDisabilityType').value = userProfile.disabilityType;
+    document.getElementById('ppPwdId').value        = userProfile.pwdId;
+    document.getElementById('ppNotes').value        = userProfile.notes;
+    document.getElementById('ppEmergencyName').value  = userProfile.emergencyName;
+    document.getElementById('ppEmergencyPhone').value = userProfile.emergencyPhone;
+    document.getElementById('ppEmergencyRel').value   = userProfile.emergencyRel;
+    updateVerifyBadge();
+    updateProfileCompletion();
+  }
+
+  function saveProfile() {
+    userProfile.firstName    = document.getElementById('ppFirstName').value.trim();
+    userProfile.lastName     = document.getElementById('ppLastName').value.trim();
+    userProfile.age          = document.getElementById('ppAge').value.trim();
+    userProfile.gender       = document.getElementById('ppGender').value;
+    userProfile.dob          = document.getElementById('ppDob').value;
+    userProfile.phone        = document.getElementById('ppPhone').value.trim();
+    userProfile.email        = document.getElementById('ppEmail').value.trim();
+    userProfile.address      = document.getElementById('ppAddress').value.trim();
+    userProfile.disabilityType = document.getElementById('ppDisabilityType').value;
+    userProfile.pwdId        = document.getElementById('ppPwdId').value.trim();
+    userProfile.notes        = document.getElementById('ppNotes').value.trim();
+    userProfile.emergencyName  = document.getElementById('ppEmergencyName').value.trim();
+    userProfile.emergencyPhone = document.getElementById('ppEmergencyPhone').value.trim();
+    userProfile.emergencyRel   = document.getElementById('ppEmergencyRel').value;
+
+    updateProfileCompletion();
+    // Update sidebar display name
+    const full = (userProfile.firstName + ' ' + userProfile.lastName).trim();
+    if (full) {
+      document.querySelector('.profile-name').textContent = full;
+      document.querySelector('.profile-avatar').textContent = userProfile.firstName[0]?.toUpperCase() || 'U';
+      document.getElementById('ppAvatarIcon').textContent = userProfile.firstName[0]?.toUpperCase() || 'U';
+      document.getElementById('ppDisplayName').textContent = full;
+      document.getElementById('ppHandle').textContent = '@' + userProfile.firstName.toLowerCase() + '.pwd';
+    }
+
+    // Flash save button
+    const btn = document.querySelector('.pp-save-btn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+    btn.style.background = '#00c864';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
+      btn.style.background = '';
+    }, 2000);
+  }
+
+  function updateProfileCompletion() {
+    const required = [userProfile.firstName, userProfile.lastName, userProfile.phone, userProfile.disabilityType];
+    const optional = [userProfile.age, userProfile.gender, userProfile.email, userProfile.address,
+                      userProfile.pwdId, userProfile.emergencyName, userProfile.emergencyPhone];
+    const reqDone = required.filter(Boolean).length;
+    const optDone = optional.filter(Boolean).length;
+    const pct = Math.round(((reqDone / required.length) * 60 + (optDone / optional.length) * 40));
+    document.getElementById('ppCompleteFill').style.width = pct + '%';
+    document.getElementById('ppCompleteLabel').textContent = 'Profile ' + pct + '% complete';
+    userProfile.profileComplete = reqDone === required.length;
+  }
+
+  function isProfileComplete() {
+    return !!(userProfile.firstName && userProfile.lastName && userProfile.phone && userProfile.disabilityType);
+  }
+
+  function updateVerifyBadge() {
+    const badge = document.getElementById('ppVerifyBadge');
+    const label = document.getElementById('ppVerifyLabel');
+    badge.className = 'pp-verify-badge ' + userProfile.verificationStatus;
+    if (userProfile.verificationStatus === 'verified') {
+      label.textContent = 'PWD Verified ✓';
+      badge.querySelector('i').className = 'fa-solid fa-shield-check';
+    } else if (userProfile.verificationStatus === 'pending') {
+      label.textContent = 'Verification Pending';
+      badge.querySelector('i').className = 'fa-solid fa-clock';
+    } else {
+      label.textContent = 'PWD Not Verified';
+      badge.querySelector('i').className = 'fa-solid fa-shield-halved';
+    }
+  }
+
+  function openVerifyModal() { document.getElementById('ppVerifyModal').classList.add('open'); }
+  function closeVerifyModal() { document.getElementById('ppVerifyModal').classList.remove('open'); }
+  function setVerification(status) {
+    userProfile.verificationStatus = status;
+    updateVerifyBadge();
+    closeVerifyModal();
+  }
+
+  function goToProfile() {
+    dismissProfilePopup();
+    openProfilePanel();
+  }
+  function dismissProfilePopup() {
+    document.getElementById('ppCompletePopup').classList.remove('show');
+    localStorage.setItem('ppPopupDismissed', '1');
+  }
+
+  // Profile item wired via onclick in HTML
+
+  // Show complete profile popup after 2s (if not dismissed)
+setTimeout(function() {
+  var popup = document.getElementById('ppCompletePopup');
+  if (popup && !localStorage.getItem('ppPopupDismissed') && !isProfileComplete()) {
+    popup.classList.add('show');
+  }
+}, 2000);
+
+
+  // Block Step 5 confirm if profile incomplete
+  // Override bkNext to check profile on step 4->5 transition
+  const _origBkNext = window.bkNext;
+  document.addEventListener('DOMContentLoaded', () => {
+    const nextBtn = document.getElementById('bkBtnNext');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (typeof bkStep !== 'undefined' && bkStep === 4 && !isProfileComplete()) {
+          const warn = document.getElementById('ppIncompleteWarn');
+          warn.style.display = 'block';
+          // Show profile panel with warning
+          openProfilePanel();
+          document.getElementById('ppIncompleteWarn').style.display = 'block';
+        }
+      }, true);
+    }
+  });
+
+
+
+
+  /* ===== SETTINGS PANEL FUNCTIONS ===== */
+function openSettingsPanel() {
+  closeAllPanels();
+  document.getElementById('settingsPanel').classList.add('open');
+}
+
+function closeSettingsPanel() {
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+
+// Close settings when clicking outside (optional)
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('settingsPanel');
+  const navBtn = document.getElementById('navSettings');
+  if (panel && panel.classList.contains('open')) {
+    if (!panel.contains(e.target) && e.target !== navBtn && !navBtn.contains(e.target)) {
+      closeSettingsPanel();
+    }
+  }
+});
+
+/* ===== CALL SCREEN ===== */
+var callInterval = null, callSecs = 0, isMuted = false, isSpeaker = false;
+
+function openCallScreen() {
+  document.getElementById('contactOverlay').classList.remove('open');
+  document.getElementById('msgOverlay').classList.remove('open');
+  document.getElementById('callOverlay').classList.add('open');
+  document.getElementById('callStatus').style.display = 'block';
+  document.getElementById('callTimer').style.display = 'none';
+  callSecs = 0;
+  clearInterval(callInterval);
+  // Simulate pickup after 2s
+  setTimeout(function() {
+    document.getElementById('callStatus').textContent = 'Connected';
+    document.getElementById('callStatus').style.display = 'none';
+    document.getElementById('callTimer').style.display = 'block';
+    callInterval = setInterval(function() {
+      callSecs++;
+      var m = String(Math.floor(callSecs/60)).padStart(2,'0');
+      var s = String(callSecs%60).padStart(2,'0');
+      document.getElementById('callTimer').textContent = m + ':' + s;
+    }, 1000);
+  }, 2000);
+}
+
+function endCall() {
+  clearInterval(callInterval);
+  callSecs = 0;
+  isMuted = false;
+  isSpeaker = false;
+  var overlay = document.getElementById('callOverlay');
+  if (overlay) overlay.classList.remove('open');
+  // Reset mute and speaker visuals
+  document.getElementById('muteIcon').style.background = 'rgba(255,255,255,.12)';
+  document.getElementById('spkIcon').style.background = 'rgba(255,255,255,.12)';
+  document.getElementById('spkIcon').style.color = '#fff';
+  document.getElementById('muteLabel').textContent = 'Mute';
+  document.getElementById('spkLabel').textContent = 'Speaker';
+}
+
+
+function toggleMute() {
+  isMuted = !isMuted;
+  document.getElementById('muteIcon').style.background = isMuted ? '#ff3b30' : 'rgba(255,255,255,.15)';
+  document.getElementById('muteLabel').textContent = isMuted ? 'Unmute' : 'Mute';
+}
+
+function toggleSpeaker() {
+  isSpeaker = !isSpeaker;
+  document.getElementById('spkIcon').style.background = isSpeaker ? 'var(--accent)' : 'rgba(255,255,255,.15)';
+  document.getElementById('spkIcon').style.color = isSpeaker ? '#000' : '#fff';
+  document.getElementById('spkLabel').textContent = isSpeaker ? 'Speaker On' : 'Speaker';
+}
+
+/* ===== MESSAGE SCREEN ===== */
+function openMsgScreen() {
+  document.getElementById('contactOverlay').classList.remove('open');
+  document.getElementById('msgOverlay').classList.add('open');
+  var body = document.getElementById('msgBody');
+  setTimeout(function(){ body.scrollTop = body.scrollHeight; }, 100);
+}
+
+function sendMsg() {
+  var input = document.getElementById('msgInput');
+  var txt = input.value.trim();
+  if (!txt) return;
+  appendMsg(txt);
+  input.value = '';
+  // Simulate driver reply
+  setTimeout(function() {
+    var replies = [
+      'Got it! 👍','On my way!','Almost there, 2 minutes!','Sure, no problem!','Thank you for letting me know! 😊'];
+    appendDriverMsg(replies[Math.floor(Math.random()*replies.length)]);
+  }, 1500);
+}
+
+function sendQuick(txt) {
+  appendMsg(txt);
+  setTimeout(function() {
+    appendDriverMsg('Understood! 👍');
+  }, 1500);
+}
+
+function appendMsg(txt) {
+  var body = document.getElementById('msgBody');
+  var now = new Date();
+  var time = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+' AM ✓✓';
+  body.innerHTML += '<div class="msg-bubble me">'+txt+'</div><div class="msg-time me">'+time+'</div>';
+  body.scrollTop = body.scrollHeight;
+}
+
+function appendDriverMsg(txt) {
+  var body = document.getElementById('msgBody');
+  var now = new Date();
+  var time = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+' AM';
+  body.innerHTML += '<div class="msg-bubble driver">'+txt+'</div><div class="msg-time driver">'+time+'</div>';
+  body.scrollTop = body.scrollHeight;
+}
+
+
+</script>
+
+<!-- BOOKING CONFIRMED SPLIT CARD -->
+<div class="bk-confirmed-overlay" id="bkConfirmedOverlay">
+  <div class="bk-confirmed-card">
+
+    <!-- LEFT: REAL MAP -->
+    <div class="bkc-map-side">
+      <div id="bkcMap"></div>
+      <div class="bkc-ref-chip" id="bkcRefChip">PWD-000000</div>
+      <div class="bkc-map-badge origin">
+        <i class="fa-solid fa-circle-dot"></i>
+        <span id="bkcOriginLabel">Origin</span>
+      </div>
+      <div class="bkc-map-badge dest">
+        <i class="fa-solid fa-location-dot"></i>
+        <span id="bkcDestLabel">Destination</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: INFO PANEL -->
+    <div class="bkc-info-side">
+
+      <div class="bkc-top-bar">
+        <div class="bkc-success-badge">
+          <div class="bkc-success-icon">&#x2705;</div>
+          <div>
+            <div class="bkc-success-title">Booking Confirmed!</div>
+            <div class="bkc-success-sub">Your driver has been notified</div>
+          </div>
+        </div>
+        <button class="bkc-close-btn" onclick="closeBkcCard()">&#x2715;</button>
+      </div>
+
+      <div class="bkc-section">
+        <div class="bkc-section-title"><i class="fa-solid fa-user" style="color:var(--accent);margin-right:6px;"></i>Rider Info</div>
+        <div class="bkc-rider-card">
+          <div class="bkc-rider-av" id="bkcRiderAv">K</div>
+          <div>
+            <div class="bkc-rider-name" id="bkcRiderName">Passenger</div>
+            <div class="bkc-rider-sub">Verified PWD Passenger</div>
+            <div class="bkc-pwd-chip">&#x267F; PWD Accessibility Mode</div>
+          </div>
+        </div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Disability</span><span class="bkc-info-val" id="bkcDisability">&#x2014;</span></div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Contact</span><span class="bkc-info-val" id="bkcPhone">&#x2014;</span></div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Date &amp; Time</span><span class="bkc-info-val" id="bkcDatetime">&#x2014;</span></div>
+      </div>
+
+      <div class="bkc-section">
+        <div class="bkc-section-title"><i class="fa-solid fa-car" style="color:var(--accent);margin-right:6px;"></i>Driver Info</div>
+        <div class="bkc-rider-card" style="margin-bottom:10px;">
+          <div class="bkc-rider-av" style="background:linear-gradient(135deg,var(--accent),var(--accent2));font-size:15px;" id="bkcDriverAv">?</div>
+          <div>
+            <div class="bkc-rider-name" id="bkcDriverName">&#x2014;</div>
+            <div class="bkc-rider-sub" id="bkcDriverMeta">&#x2014;</div>
+          </div>
+        </div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Vehicle Type</span><span class="bkc-info-val"><i class="fa-solid fa-car" style="margin-right:5px;"></i>Car</span></div>
+        <div class="bkc-info-row"><span class="bkc-info-label">License Plate</span><span class="bkc-info-val" id="bkcPlate">&#x2014;</span></div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Accessibility</span><span class="bkc-info-val" style="color:var(--accent);">Wheelchair Ramp &#x2713;</span></div>
+        <div class="bkc-info-row"><span class="bkc-info-label">Status</span><span class="bkc-info-val"><span class="bkc-status-ready">Driver Ready</span></span></div>
+      </div>
+
+      <div class="bkc-section">
+        <div class="bkc-section-title"><i class="fa-solid fa-receipt" style="color:var(--accent);margin-right:6px;"></i>Fare Breakdown</div>
+        <div class="bkc-fare-row"><span>Base Fare</span><span id="bkcFareBase">&#x2014;</span></div>
+        <div class="bkc-fare-row"><span>Distance Charge</span><span id="bkcFareDist">&#x2014;</span></div>
+        <div class="bkc-fare-row"><span>Care / Accessibility Fee</span><span id="bkcFareCare">&#x2014;</span></div>
+        <div class="bkc-fare-row"><span>Add-on Services</span><span id="bkcFareAddons">&#x2014;</span></div>
+        <div class="bkc-fare-row bkc-fare-discount"><span>PWD Discount</span><span>&#x2212;&#x20b1;0</span></div>
+        <div class="bkc-fare-total-row">
+          <span class="bkc-fare-total-label">TOTAL</span>
+          <span class="bkc-fare-total-val" id="bkcFareTotal">&#x20b1;0</span>
+        </div>
+      </div>
+
+      <button class="bkc-bottom-btn" onclick="closeBkcCard()">
+        <i class="fa-solid fa-map"></i> Back to Map
+      </button>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MAP LOCATION PICKER -->
+<div class="loc-picker-overlay" id="locPickerOverlay">
+  <div class="loc-picker-modal">
+    <div class="loc-picker-header">
+      <h3 id="locPickerTitle"><i class="fa-solid fa-map-pin" style="color:var(--accent);margin-right:8px;"></i>Pick Location on Map</h3>
+      <button class="bkc-close-btn" onclick="closeLocPicker()">&#x2715;</button>
+    </div>
+    <div style="position:relative;">
+    <div class="loc-picker-search">
+      <input type="text" id="locPickerSearchInput" placeholder="Search for a place..." autocomplete="off" oninput="clearTimeout(locSearchTimeout);locSearchTimeout=setTimeout(()=>doLocPickerSearch(this.value),150)" onkeydown="if(event.key==='Enter')locPickerSearch()"/>
+      <button onclick="getCurrentLocation()"><i class="fa-solid fa-location-crosshairs"></i> Current</button>
+      <button onclick="locPickerSearch()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    </div>
+    <div class="loc-picker-dropdown" id="locPickerDropdown"></div>
+    </div>
+    <div id="locPickerMap"></div>
+    <div class="loc-picker-bar">
+      <div class="loc-picker-chosen">
+        Click anywhere on the map to pin your location
+        <strong id="locPickerChosenLabel">No location selected</strong>
+      </div>
+      <button class="loc-picker-confirm" id="locPickerConfirmBtn" onclick="confirmLocPicker()" disabled>
+        <i class="fa-solid fa-check"></i> Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- HISTORY PANEL -->
+<div class="history-panel" id="historyPanel">
+  <div class="history-panel-header">
+    <h2><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent);margin-right:10px;"></i>Booking History</h2>
+    <button class="history-close" onclick="closeHistoryPanel()">&#x2715;</button>
+  </div>
+  <div class="history-list" id="historyList">
+    <div class="history-empty">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      No bookings yet.<br>Your completed rides will appear here.
+    </div>
+  </div>
+</div>
+
+
+<!-- HISTORY DETAIL MODAL -->
+<div class="history-detail-overlay" id="historyDetailOverlay" onclick="if(event.target===this)closeHistoryDetail()">
+  <div class="history-detail-card" id="historyDetailCard">
+    <div class="hd-header">
+      <div class="hd-header-left">
+        <div class="hd-header-icon">&#x1f4cb;</div>
+        <div>
+          <div class="hd-ref" id="hdRef">PWD-000000</div>
+          <div class="hd-booked-on" id="hdBookedOn">Booked on &#x2014;</div>
+        </div>
+      </div>
+      <button class="hd-close" onclick="closeHistoryDetail()">&#x2715;</button>
+    </div>
+    <div class="hd-route-strip">
+      <div class="hd-route-dot" style="background:#00d4e8;"></div>
+      <div class="hd-route-from" id="hdFrom">&#x2014;</div>
+      <div class="hd-route-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="hd-route-to" id="hdTo">&#x2014;</div>
+      <div class="hd-route-dot" style="background:#ff6b6b;"></div>
+    </div>
+    <div class="hd-body">
+      <div class="hd-section">
+        <div class="hd-section-title"><i class="fa-solid fa-user"></i> Passenger Info</div>
+        <div class="hd-grid">
+          <div class="hd-cell"><div class="hd-cell-label">Name</div><div class="hd-cell-val" id="hdPassenger">&#x2014;</div></div>
+          <div class="hd-cell"><div class="hd-cell-label">Contact</div><div class="hd-cell-val" id="hdContact">&#x2014;</div></div>
+          <div class="hd-cell"><div class="hd-cell-label">Date &amp; Time</div><div class="hd-cell-val" id="hdDatetime">&#x2014;</div></div>
+          <div class="hd-cell"><div class="hd-cell-label">Disability</div><div class="hd-cell-val" id="hdDisability" style="font-size:11px;">&#x2014;</div></div>
+        </div>
+      </div>
+      <div class="hd-section">
+        <div class="hd-section-title"><i class="fa-solid fa-car"></i> Driver</div>
+        <div class="hd-grid">
+          <div class="hd-cell"><div class="hd-cell-label">Driver Name</div><div class="hd-cell-val" id="hdDriver">&#x2014;</div></div>
+          <div class="hd-cell"><div class="hd-cell-label">Vehicle</div><div class="hd-cell-val" id="hdVehicle">&#x2014;</div></div>
+        </div>
+      </div>
+      <div class="hd-section">
+        <div class="hd-section-title"><i class="fa-solid fa-receipt"></i> Fare Summary</div>
+        <div class="hd-fare-rows" id="hdFareRows"></div>
+        <div class="hd-fare-total">
+          <span class="hd-fare-total-label">TOTAL</span>
+          <span class="hd-fare-total-val" id="hdFareTotal">&#x20b1;0.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="hd-status-row">
+      <span class="hd-status-chip" id="hdStatusChip">&#x2014;</span>
+      <span style="font-size:11px;color:var(--text3);">PWD-Certified Transport</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- USER PROFILE PANEL -->
+<div class="profile-panel" id="profilePanel">
+  <div class="profile-panel-header">
+    <h2><i class="fa-solid fa-circle-user" style="color:var(--accent);margin-right:10px;"></i>My Profile</h2>
+    <button class="pp-close" onclick="closeProfilePanel()">&#x2715;</button>
+  </div>
+  <div class="profile-panel-body">
+
+    <!-- Hero -->
+    <div class="pp-hero">
+      <div class="pp-avatar-wrap">
+        <div class="pp-avatar" id="ppAvatarIcon">K</div>
+        <div class="pp-avatar-edit" title="Change photo (future feature)">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+      </div>
+      <div class="pp-avatar-edit-note">📸 Change photo — coming soon</div>
+      <div class="pp-display-name" id="ppDisplayName">Klint Vincent</div>
+      <div class="pp-handle" id="ppHandle">@klint.pwd</div>
+      <div class="pp-verify-badge unverified" id="ppVerifyBadge" onclick="openVerifyModal()">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span id="ppVerifyLabel">PWD Not Verified</span>
+      </div>
+      <div class="pp-complete-bar">
+        <div class="pp-complete-fill" id="ppCompleteFill" style="width:30%"></div>
+      </div>
+      <div class="pp-complete-label" id="ppCompleteLabel">Profile 30% complete</div>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="pp-section">
+      <div class="pp-section-title"><i class="fa-solid fa-user"></i> Personal Information</div>
+      <div class="pp-row">
+        <div class="pp-field">
+          <label>First Name</label>
+          <input type="text" id="ppFirstName" placeholder="Juan"/>
+        </div>
+        <div class="pp-field">
+          <label>Last Name</label>
+          <input type="text" id="ppLastName" placeholder="Dela Cruz"/>
+        </div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-field">
+          <label>Age</label>
+          <input type="number" id="ppAge" placeholder="e.g. 28" min="1" max="120"/>
+        </div>
+        <div class="pp-field">
+          <label>Gender</label>
+          <select id="ppGender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Non-binary</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <div class="pp-field">
+        <label>Date of Birth</label>
+        <input type="date" id="ppDob"/>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="pp-section">
+      <div class="pp-section-title"><i class="fa-solid fa-address-book"></i> Contact Details</div>
+      <div class="pp-field">
+        <label>Mobile Number</label>
+        <input type="tel" id="ppPhone" placeholder="+63 912 345 6789"/>
+      </div>
+      <div class="pp-field">
+        <label>Email Address</label>
+        <input type="email" id="ppEmail" placeholder="juan@email.com"/>
+      </div>
+      <div class="pp-field">
+        <label>Home Address</label>
+        <textarea id="ppAddress" placeholder="Street, Barangay, City, Province"></textarea>
+      </div>
+    </div>
+
+    <!-- Disability -->
+    <div class="pp-section">
+      <div class="pp-section-title"><i class="fa-solid fa-wheelchair"></i> Disability Information</div>
+      <div class="pp-field">
+        <label>Type of Disability</label>
+        <select id="ppDisabilityType">
+          <option value="">Select disability type</option>
+          <option>Wheelchair User</option>
+          <option>Walking Difficulty</option>
+          <option>Crutches / Walker</option>
+          <option>Amputee</option>
+          <option>Visual Impairment</option>
+          <option>Hearing Impairment</option>
+          <option>Elderly Mobility</option>
+          <option>Post-Surgery</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="pp-field">
+        <label>PWD ID Number <span style="color:var(--text3);font-weight:400;text-transform:none;">(Optional)</span></label>
+        <input type="text" id="ppPwdId" placeholder="e.g. PWD-2024-001234"/>
+      </div>
+      <div class="pp-field">
+        <label>Special Notes for Drivers</label>
+        <textarea id="ppNotes" placeholder="e.g. Need help folding wheelchair, speak slowly, support on left side..."></textarea>
+      </div>
+    </div>
+
+    <!-- Emergency Contact -->
+    <div class="pp-section">
+      <div class="pp-section-title"><i class="fa-solid fa-user-shield"></i> Emergency Contact</div>
+      <div class="pp-field">
+        <label>Full Name</label>
+        <input type="text" id="ppEmergencyName" placeholder="Guardian / Family member name"/>
+      </div>
+      <div class="pp-field">
+        <label>Contact Number</label>
+        <input type="tel" id="ppEmergencyPhone" placeholder="+63 912 345 6789"/>
+      </div>
+      <div class="pp-field">
+        <label>Relationship</label>
+        <select id="ppEmergencyRel">
+          <option value="">Select</option>
+          <option>Parent</option>
+          <option>Spouse</option>
+          <option>Sibling</option>
+          <option>Child</option>
+          <option>Caregiver</option>
+          <option>Friend</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pp-incomplete-warn" id="ppIncompleteWarn">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Please complete your profile before confirming a booking. Required: name, contact number, and disability type.
+    </div>
+
+    <button class="pp-save-btn" onclick="saveProfile()">
+      <i class="fa-solid fa-floppy-disk"></i> Save Profile
+    </button>
+
+  </div>
+</div>
+
+<!-- PWD VERIFICATION MODAL -->
+<div class="pp-verify-modal" id="ppVerifyModal">
+  <div class="pp-verify-box">
+    <div class="pp-verify-icon">🛡️</div>
+    <h3>PWD Verification</h3>
+    <p>Are you a registered Person with Disability (PWD) with a valid PWD ID issued by your local government?<br><br>
+    <span style="font-size:11px;color:var(--text3);">Note: Full verification with ID upload will be available once the backend is live.</span></p>
+    <div class="pp-verify-btns">
+      <button class="pp-verify-yes" onclick="setVerification('verified')">
+        <i class="fa-solid fa-check" style="margin-right:8px;"></i>Yes, I am a registered PWD
+      </button>
+      <button class="pp-verify-pending" onclick="setVerification('pending')">
+        <i class="fa-solid fa-clock" style="margin-right:8px;"></i>I have a PWD ID but haven't uploaded yet
+      </button>
+      <button class="pp-verify-no" onclick="setVerification('unverified')">
+        <i class="fa-solid fa-xmark" style="margin-right:8px;"></i>No, I am not registered
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETE PROFILE POPUP -->
+
+<div class="pp-popup" id="ppPopup">
+  <div class="pp-popup-title">✨ Continue finishing your profile?</div>
+  <div class="pp-popup-sub">Complete your profile to unlock full booking features and PWD discounts.</div>
+  <div class="pp-popup-btns">
+    <button class="pp-popup-go" onclick="window.location.href='profile.html'">Go to Profile</button>
+    <button class="pp-popup-later" onclick="this.closest('.pp-popup').classList.remove('show');try{localStorage.setItem('ppDismissed','1')}catch(e){}">Later</button>
+  </div>
+</div>
+<!-- FAB BUTTONS -->
+<div class="fab-wrap">
+  <div class="fab-item">
+    <button class="fab-btn fab-msg" onclick="document.getElementById('contactOverlay').classList.add('open')" title="Contact Driver">
+      <i class="fa-solid fa-message"></i>
+    </button>
+    <div class="fab-label">Driver</div>
+  </div>
+  <div class="fab-item">
+    <button class="fab-btn fab-book" onclick="openBooking()" title="Book a Ride">
+      <i class="fa-solid fa-car"></i>
+    </button>
+    <div class="fab-label">Book Ride</div>
+  </div>
+</div>
+
+<!-- CONTACT CARD -->
+<div class="contact-overlay" id="contactOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="contact-card">
+    <div class="contact-card-title"><i class="fa-solid fa-address-book"></i> Trip Contacts</div>
+
+    <!-- Driver -->
+    <div class="contact-person">
+      <div class="contact-av driver">RS</div>
+      <div class="contact-info">
+        <div class="contact-name">Ricardo Santos</div>
+        <div class="contact-role">🚗 Your Driver · PWD Certified</div>
+        <div class="contact-actions">
+          <button class="contact-btn" onclick="openCallScreen()"><i class="fa-solid fa-phone"></i> Call</button>
+          <button class="contact-btn" onclick="openMsgScreen()"><i class="fa-brands fa-facebook-messenger"></i> Message</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passenger -->
+    <div class="contact-person">
+      <div class="contact-av user">K</div>
+      <div class="contact-info">
+        <div class="contact-name">Klint Vincent</div>
+        <div class="contact-role">🧑 Passenger · PWD Rider</div>
+        <div class="contact-actions">
+          <button class="contact-btn"><i class="fa-solid fa-phone"></i> +63 912 345 6789</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="contact-close-btn" onclick="document.getElementById('contactOverlay').classList.remove('open')">
+      <i class="fa-solid fa-xmark" style="margin-right:6px"></i>Close
+    </button>
+  </div>
+</div>
+
+<!-- CALL SCREEN -->
+<div class="call-overlay" id="callOverlay" onclick="if(event.target===this)endCall()">
+  <div class="call-card">
+  <button class="call-close" onclick="endCall()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="call-av">RS</div>
+    <div class="call-name">Ricardo Santos</div>
+    <div class="call-status" id="callStatus">Calling...</div>
+    <div class="call-timer" id="callTimer">00:00</div>
+    <div class="call-info">🚗 PWD Certified Driver · 0.8 km away</div>
+    <div class="call-actions">
+      <button class="call-action-btn" onclick="toggleMute()">
+        <div class="icon call-mute" id="muteIcon"><i class="fa-solid fa-microphone-slash"></i></div>
+        <span class="lbl" id="muteLabel">Mute</span>
+      </button>
+      <button class="call-action-btn" onclick="endCall()">
+        <div class="icon call-end"><i class="fa-solid fa-phone-slash"></i></div>
+        <span class="lbl" style="color:#ff3b30">End</span>
+      </button>
+      <button class="call-action-btn" onclick="toggleSpeaker()">
+        <div class="icon call-spk" id="spkIcon"><i class="fa-solid fa-volume-high"></i></div>
+        <span class="lbl" id="spkLabel">Speaker</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MESSAGE SCREEN -->
+<div class="msg-overlay" id="msgOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="msg-card">
+    <div class="msg-header">
+      <button class="msg-back" onclick="document.getElementById('msgOverlay').classList.remove('open')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="msg-header-av">RS</div>
+      <div class="msg-header-info">
+        <div class="msg-header-name">Ricardo Santos</div>
+        <div class="msg-header-status">Online · Driver</div>
+      </div>
+      <button class="msg-back" onclick="openCallScreen()"><i class="fa-solid fa-phone"></i></button>
+    </div>
+    <div class="msg-body" id="msgBody">
+      <div class="msg-bubble driver">Hi! I'm Ricardo, your PWD-certified driver. I'm on my way! 👋</div>
+      <div class="msg-time driver">9:42 AM</div>
+      <div class="msg-bubble driver">ETA is around 3 minutes. Please be ready! 🚗</div>
+      <div class="msg-time driver">9:43 AM</div>
+      <div class="msg-bubble me">Thank you! I'll be at the front door. I use a wheelchair so please park close. 🙏</div>
+      <div class="msg-time me">9:44 AM ✓✓</div>
+      <div class="msg-bubble driver">Got it! I'll assist you with the wheelchair. Almost there! 😊</div>
+      <div class="msg-time driver">9:44 AM</div>
+    </div>
+    <div class="msg-quick">
+      <button class="msg-quick-btn" onclick="sendQuick('I\'m ready!')">I'm ready!</button>
+      <button class="msg-quick-btn" onclick="sendQuick('Please wait a moment.')">Please wait.</button>
+      <button class="msg-quick-btn" onclick="sendQuick('Where are you now?')">Where are you?</button>
+      <button class="msg-quick-btn" onclick="sendQuick('I need help getting in.')">Need help in.</button>
+      <button class="msg-quick-btn" onclick="sendQuick('Thank you!')">Thank you!</button>
+    </div>
+    <div class="msg-footer">
+      <input class="msg-input" id="msgInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="msg-send" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+</html>

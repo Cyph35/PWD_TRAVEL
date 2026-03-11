@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PWD Travel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="icon">&#9855;</div>
+    <span><b>PWD</b>TRAVEL</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#plan">Plan Journey</a></li>
+    <li><a href="#safety">Safety</a></li>
+    <li><a href="#support">Support</a></li>
+  </ul>
+  <button class="btn-nav" data-scroll="#plan">PLAN NOW ✦</button>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#services">Services</a>
+  <a href="#plan">Plan Journey</a>
+  <a href="#safety">Safety</a>
+  <a href="#support">Support</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div>
+    <div class="hero-badge"><span>✦</span> REDEFINING INCLUSION <span>✦</span></div>
+    <h1>
+      <span>BARRIER-FREE</span>
+      <span>TRAVEL</span>
+    </h1>
+    <p>Experience the world without limits. Our high-performance travel solutions are engineered specifically for persons with disabilities, ensuring every journey is as seamless as your next move.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" data-action="openAuth">LOG IN / SIGN IN ✦</button>
+      <button class="btn-secondary" onclick="window.location.href='home.html?guest=true'">EXPLORE SERVICES →</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="icon">&#9855;</div>
+        <div class="num">100%</div>
+        <div class="label">Total Inclusion</div>
+      </div>
+      <div class="stat">
+        <div class="icon">🛡</div>
+        <div class="num">Grade A</div>
+        <div class="label">Verified Safety</div>
+      </div>
+      <div class="stat">
+        <div class="icon">🌐</div>
+        <div class="num">240+</div>
+        <div class="label">Cities Global Reach</div>
+      </div>
+      <div class="stat">
+        <div class="icon">✈</div>
+        <div class="num">24/7</div>
+        <div class="label">Live Swift Support</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<<!-- SERVICES -->
+<section id="services">
+  <h2 class="section-title">ENGINEERED FOR <span class="accent">INCLUSION</span></h2>
+  <p class="section-sub">We don't just book trips. We engineer seamless travel experiences by verifying every touchpoint for total accessibility.</p>
+  <div class="services-grid">
+    <div class="service-card large">
+      <div class="card-icon">🚗</div>
+      <div>
+        <h3>Accessible Transport</h3>
+        <p>Every flight, train, and transfer verified for total accessibility. No barriers, just movement.</p>
+      </div>
+    </div>
+    <div class="services-right">
+      <div class="service-card wide">
+        <div class="card-icon">🏨</div>
+        <h3>Verified Stays</h3>
+        <p>Hotels and rentals physically inspected by our experts for accessibility compliance.</p>
+      </div>
+      <div class="services-bottom-row">
+        <div class="service-card">
+          <div class="card-icon">📍</div>
+          <h3>Expert Guides</h3>
+          <p>Local guides trained in accessibility support.</p>
+        </div>
+        <div class="service-card">
+          <div class="card-icon">📞</div>
+          <h3>24/7 Support</h3>
+          <p>Live human support whenever you need it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PLAN JOURNEY -->
+<section class="plan-section" id="plan">
+  <div class="plan-inner">
+    <div class="plan-left">
+      <div class="plan-badge">✦ JOURNEY ENGINE V1.0 ✦</div>
+      <h2>PLAN YOUR<br><span>BARRIER-FREE</span>EXPERIENCE</h2>
+      <p>Input your preferences and our AI-powered inclusion engine will engineer a perfectly accessible journey verified across 40+ safety metrics.</p>
+      <div class="plan-feature">
+        <div class="fi">&#9855;</div>
+        <span>Accessibility verified route calculation</span>
+      </div>
+      <div class="plan-feature">
+        <div class="fi">⚙</div>
+        <span>AI-powered personalized recommendations</span>
+      </div>
+      <div class="plan-feature">
+        <div class="fi">📍</div>
+        <span>Total local mobility support verified</span>
+      </div>
+    </div>
+    <div class="plan-form">
+      <form id="journeyForm">
+        <div class="form-group">
+          <label for="destination">Destination</label>
+          <div class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <input type="text" id="destination" placeholder="Where to next?" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="departure">Departure</label>
+            <input type="date" id="departure" />
+          </div>
+          <div class="form-group">
+            <label for="travelers">Travelers</label>
+            <input type="number" id="travelers" placeholder="1" min="1" value="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="needs">Specific Needs (Optional)</label>
+          <input type="text" id="needs" placeholder="e.g. wheelchair ramp, low-vision support" />
+        </div>
+        <button type="submit" class="btn-full">CALCULATE JOURNEY →</button>
+        <p class="form-note">By calculating, you agree to our <a href="#">Inclusion Policy</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section" id="safety">
+  <h2 class="section-title">TRUSTED BY <span class="accent">EXPLORERS</span></h2>
+  <div class="testimonials-grid">
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <div class="quote-icon">"</div>
+      <p class="testi-text">"The support guides were incredible. They knew exactly how to assist without being intrusive."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">S</div>
+        <div>
+          <div class="testi-name">Sarah Chen</div>
+          <div class="testi-role">Visual Impairment Advocate</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <div class="quote-icon">"</div>
+      <p class="testi-text">"Accessible bungee jumping in New Zealand? PWD Travel made it happen safely."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">M</div>
+        <div>
+          <div class="testi-name">Marcus Thorne</div>
+          <div class="testi-role">Adventure Enthusiast</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <div class="quote-icon">"</div>
+      <p class="testi-text">"Traveling with my son who has autism has always been stressful. This was a dream."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">E</div>
+        <div>
+          <div class="testi-name">Elena Rodriguez</div>
+          <div class="testi-role">Family Traveler</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="support">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <div class="icon">&#9855;</div>
+        <span><b>PWD</b>TRAVEL</span>
+      </div>
+      <p>Engineered for inclusion. We provide barrier-free travel experiences that empower persons with disabilities to explore the world safely and seamlessly.</p>
+      <div class="social-links">
+        <a class="social-link" href="#">𝕏</a>
+        <a class="social-link" href="#">📷</a>
+        <a class="social-link" href="#">in</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#">Accessible Transport</a></li>
+        <li><a href="#">Verified Stays</a></li>
+        <li><a href="#">Local Support</a></li>
+        <li><a href="#">Custom Itineraries</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#">Inclusion Policy</a></li>
+        <li><a href="#">Safety Standards</a></li>
+        <li><a href="#">Case Studies</a></li>
+        <li><a href="#">Help Center</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact">
+        <div class="contact-row"><span class="ci">✉</span> support@pwdtravel.com</div>
+        <div class="contact-row"><span class="ci">📞</span> +1 (555) 482-9300</div>
+        <div class="contact-row"><span class="ci">📍</span> 24 Innovation Way, Tech District</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 PWD Travel Services. Engineered for the future of inclusion.</p>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Accessibility</a>
+    </div>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="auth-container" id="authContainer">
+
+      <!-- SIGN IN FORM -->
+      <div class="auth-form-container auth-sign-in">
+        <form id="authSignInForm">
+          <h1>Sign In</h1>
+          <div class="auth-social-icons">
+            <a href="#"><i class="fa-brands fa-google-plus-g"></i></a>
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#"><i class="fa-brands fa-github"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+          <span>or use your email &amp; password</span>
+          <input type="email" placeholder="Email" />
+          <input type="password" placeholder="Password" />
+          <a href="#">Forgot your password?</a>
+          <button type="submit">SIGN IN</button>
+          <p class="auth-toggle-text">Don't have an account? <a href="#" id="authGoRegister">Sign Up</a></p>
+        </form>
+      </div>
+
+      <!-- SIGN UP FORM -->
+      <div class="auth-form-container auth-sign-up">
+        <form id="authSignUpForm">
+          <h1>Create Account</h1>
+          <div class="auth-social-icons">
+            <a href="#"><i class="fa-brands fa-google-plus-g"></i></a>
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#"><i class="fa-brands fa-github"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+          <span>or use your email for registration</span>
+          <input type="text" placeholder="Name" />
+          <input type="email" placeholder="Email" />
+          <input type="tel" placeholder="Phone Number" />
+          <input type="password" placeholder="Password" />
+
+          <button type="submit">SIGN UP</button>
+          <p class="auth-toggle-text">Already have an account? <a href="#" id="authGoLogin">Sign In</a></p>
+        </form>
+      </div>
+
+      <!-- TOGGLE PANEL -->
+      <div class="auth-toggle-container">
+        <div class="auth-toggle">
+          <div class="auth-toggle-panel auth-toggle-left">
+            <h1>Welcome Back!</h1>
+            <p>Enter your details to access your barrier-free journey.</p>
+            <button id="authLoginBtn">Sign In</button>
+          </div>
+          <div class="auth-toggle-panel auth-toggle-right">
+            <h1>Hello, Explorer!</h1>
+            <p>Register today and start planning your accessible adventure.</p>
+            <button id="authRegisterBtn">Sign Up</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="main.js"></script>
+</body>
+</html>
