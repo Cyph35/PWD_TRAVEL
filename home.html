@@ -1067,6 +1067,63 @@
   .settings-panel { width: 100%; right: -100%; }
 }
 
+
+
+/* ===== MOBILE: 480px and below ===== */
+@media (max-width: 480px) {
+
+  /* Keep sidebar on left, always collapsed (icon-only) */
+  .app { flex-direction: row; }
+
+  :root { --sidebar-width: 52px; --sidebar-open: 180px; }
+
+  .sidebar { width: var(--sidebar-width) !important; }
+  .sidebar.open { width: var(--sidebar-open) !important; }
+
+  /* Search bar — shrink to fit next to sidebar */
+  .search-bar { left: 10px; top: 12px; right: 120px; width: auto; }
+  .search-dropdown { left: 10px; right: 10px; width: auto; top: 52px; }
+
+  /* Map controls — icon only, no text */
+  .ctrl-btn { padding: 9px; font-size: 0; }
+  .ctrl-btn i { font-size: 13px; }
+  .weather-widget { padding: 8px 10px; }
+  .weather-desc { display: none; }
+  .map-controls { top: 12px; right: 8px; gap: 6px; }
+
+  /* Zoom and dark toggle — move up slightly */
+  .zoom-controls { bottom: 20px; right: 8px; }
+  .dark-toggle { bottom: 20px; left: 10px; }
+  .dark-toggle button { padding: 8px 10px; font-size: 12px; }
+
+  /* All side panels — full screen width */
+  .weather-panel, .history-panel, .profile-panel, .settings-panel {
+    width: 100%; right: -100%;
+  }
+
+  /* Booking — bottom sheet */
+  .booking-overlay { padding: 0; align-items: flex-end; }
+  .booking-modal { border-radius: 20px 20px 0 0; max-height: 95vh; max-width: 100%; }
+  .booking-header, .booking-steps, .booking-footer { padding-left: 14px; padding-right: 14px; }
+  .booking-body { padding: 14px; }
+  .bk-row, .bk-two-col, .confirm-two-col, .driver-list { grid-template-columns: 1fr; }
+  .bk-step span { display: none; }
+
+  /* Login wall */
+  .login-wall-box { width: calc(100% - 32px); padding: 28px 20px; }
+
+  /* History detail — bottom sheet */
+  .history-detail-overlay { padding: 0; align-items: flex-end; }
+  .history-detail-card { width: 100%; max-width: 100%; border-radius: 20px 20px 0 0; }
+
+  /* Booking confirmed card */
+  .bk-confirmed-card { flex-direction: column; max-height: 96vh; }
+  .bkc-map-side { min-height: 180px; }
+  .bkc-info-side { width: 100%; }
+}
+
+
+
   </style>
 </head>
 <body>
@@ -2588,7 +2645,51 @@
 
 
   /* ===== HISTORY PANEL ===== */
-  let bookingHistory = [];
+  var bookingHistory = [
+  {
+    ref: 'PWD-001234',
+    status: 'active',
+    from: 'Zamboanga City Hall, Zamboanga',
+    to: 'Zamboanga City Medical Center',
+    datetime: 'March 11, 2026 · 10:30 AM',
+    passenger: 'Juan dela Cruz',
+    contact: '09171234567',
+    disability: 'Wheelchair User',
+    driver: 'Ricardo Santos · ⭐ 4.9',
+    vehicle: 'Toyota Vios — ABC 1234',
+    fareBase: 50, fareDist: 36, fareCare: 40, fareAddons: 0,
+    fareTotal: 126
+  },
+  {
+    ref: 'PWD-009821',
+    status: 'completed',
+    from: 'Canelar, Zamboanga City',
+    to: 'Zamboanga Airport',
+    datetime: 'March 9, 2026 · 7:00 AM',
+    passenger: 'Juan dela Cruz',
+    contact: '09171234567',
+    disability: 'Visual Impairment',
+    driver: 'Maria Reyes · ⭐ 4.8',
+    vehicle: 'Honda City — XYZ 5678',
+    fareBase: 50, fareDist: 60, fareCare: 30, fareAddons: 20,
+    fareTotal: 160
+  },
+  {
+    ref: 'PWD-007743',
+    status: 'completed',
+    from: 'Tetuan, Zamboanga City',
+    to: 'Western Mindanao State University',
+    datetime: 'March 5, 2026 · 1:00 PM',
+    passenger: 'Juan dela Cruz',
+    contact: '09171234567',
+    disability: 'Elderly / Senior',
+    driver: 'Jose Villanueva · ⭐ 4.7',
+    vehicle: 'Mitsubishi Mirage — DEF 9012',
+    fareBase: 50, fareDist: 48, fareCare: 25, fareAddons: 15,
+    fareTotal: 138
+  }
+];
+
 
   function openHistoryPanel() {
     closeAllPanels();
@@ -2690,29 +2791,33 @@
   }
 
   // Override renderHistoryList to make items clickable with detail
-  function renderHistoryList() {
-    var list = document.getElementById('historyList');
-    if (!list) return; {
-      list.innerHTML = '<div class="history-empty"><i class="fa-solid fa-clock-rotate-left"></i>No bookings yet.<br>Your completed rides will appear here.</div>';
-      return;
-    }
-    list.innerHTML = bookingHistory.map((b, i) => `
-      <div class="history-item" onclick="openHistoryDetail(${i})">
-        <div class="history-item-top">
-          <span class="history-ref">${b.ref}</span>
-          <span class="history-status-badge ${b.status}">${b.status}</span>
-        </div>
-        <div class="history-route">
-          <span>${b.from.split(',')[0]}</span>
-          <i class="fa-solid fa-arrow-right"></i>
-          <span>${b.to.split(',')[0]}</span>
-        </div>
-        <div class="history-meta"><i class="fa-solid fa-calendar" style="margin-right:5px;color:var(--accent);"></i>${b.datetime}</div>
-        <div class="history-meta"><i class="fa-solid fa-car" style="margin-right:5px;color:var(--accent);"></i>${b.driver}</div>
-        <div class="history-fare">&#x20b1;${parseFloat(b.fareTotal).toFixed(2)}</div>
-      </div>
-    `).join('');
+function renderHistoryList() {
+  var list = document.getElementById('historyList');
+  if (!list) return;  // ← just this line, no { after it
+
+  if (!bookingHistory || !bookingHistory.length) {
+    list.innerHTML = '<div class="history-empty"><i class="fa-solid fa-clock-rotate-left"></i>No bookings yet.<br>Your completed rides will appear here.</div>';
+    return;
   }
+
+  list.innerHTML = bookingHistory.map((b, i) => `
+    <div class="history-item" onclick="openHistoryDetail(${i})">
+      <div class="history-item-top">
+        <span class="history-ref">${b.ref}</span>
+        <span class="history-status-badge ${b.status}">${b.status}</span>
+      </div>
+      <div class="history-route">
+        <span>${b.from.split(',')[0]}</span>
+        <i class="fa-solid fa-arrow-right"></i>
+        <span>${b.to.split(',')[0]}</span>
+      </div>
+      <div class="history-meta"><i class="fa-solid fa-calendar" style="margin-right:5px;color:var(--accent);"></i>${b.datetime}</div>
+      <div class="history-meta"><i class="fa-solid fa-car" style="margin-right:5px;color:var(--accent);"></i>${b.driver}</div>
+      <div class="history-fare">&#x20b1;${parseFloat(b.fareTotal).toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
 
   // Run on page load so samples show immediately
   renderHistoryList();
