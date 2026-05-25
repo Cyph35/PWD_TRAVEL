@@ -3,6 +3,9 @@
 :root {
   --bg: #0b0d11;
   --bg2: #111318;
+  --bg-light: #f7f8fa;
+  --card-light: #ffffff;
+  --text-light: #0b0d11;
   --bg3: #15171e;
   --card: #13151c;
   --card2: #1a1d26;
@@ -16,6 +19,17 @@
 }
 
 html { scroll-behavior: smooth; }
+
+/* Light theme overrides */
+.light-theme {
+  --bg: var(--bg-light);
+  --bg2: var(--card-light);
+  --card: var(--card-light);
+  --text: var(--text-light);
+  --text2: #475569;
+  --text3: #6b7280;
+  --border: rgba(11,13,17,0.06);
+}
 
 body {
   font-family: 'Inter', sans-serif;
@@ -450,11 +464,13 @@ footer {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, visibility 0.4s ease;
+  pointer-events: none;
 }
 
 .modal-overlay.open {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 /* ========== MODAL BOX ========== */
@@ -940,6 +956,55 @@ nav {
 }
 .nav-links a:hover,
 .nav-links a.active { color: var(--accent); }
+
+/* Settings / Accessibility panel */
+.settings-section { padding: 40px 48px; background: transparent; pointer-events: auto !important; }
+.settings-section svg { pointer-events: none !important; }
+.settings-panel { max-width: 920px; margin: 0 auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+
+/* Ensure the settings panel sits above any overlays and accepts clicks */
+.settings-panel {
+  position: relative;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  cursor: default !important;
+}
+.settings-panel, .settings-panel * {
+  pointer-events: auto !important;
+  cursor: default !important;
+}
+/* Override any disabled-like states in settings */
+.settings-panel select, .settings-panel input, .settings-panel button,
+.settings-panel label, .settings-panel .slider, .settings-panel .switch {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+.settings-panel input:checked, .settings-panel input[type="checkbox"] {
+  cursor: pointer !important;
+}
+.settings-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+.settings-subtitle { font-size: 12px; font-weight: 700; color: var(--text2); margin-top: 10px; margin-bottom: 8px; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border-radius: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.01); }
+.setting-info { flex: 1; }
+.setting-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.setting-desc { font-size: 12px; color: var(--text3); }
+.setting-control { min-width: 140px; display: flex; align-items: center; justify-content: flex-end; }
+.setting-control select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; }
+.setting-control button.btn-toggle { padding: 8px 12px; border-radius: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); cursor: pointer; }
+
+/* Simple toggle switch */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.06); transition: .2s; border-radius: 26px; border: 1px solid var(--border); }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; top: 4px; background: var(--bg); border-radius: 50%; transition: .2s; }
+.switch input:checked + .slider { background: linear-gradient(135deg,var(--accent),var(--accent2)); border-color: transparent; }
+.switch input:checked + .slider:before { transform: translateX(20px); background: #000; }
+
+/* Color-blind filter classes (apply to root) */
+.filter-protanopia { filter: url(#protanopia); }
+.filter-deuteranopia { filter: url(#deuteranopia); }
+.filter-tritanopia { filter: url(#tritanopia); }
 .btn-nav {
   background: var(--accent); color: #000;
   border: none; padding: 10px 22px; border-radius: 50px;

@@ -74,7 +74,7 @@
   </div>
 </section>
 
-<<!-- SERVICES -->
+<!-- SERVICES -->
 <section id="services">
   <h2 class="section-title">ENGINEERED FOR <span class="accent">INCLUSION</span></h2>
   <p class="section-sub">We don't just book trips. We engineer seamless travel experiences by verifying every touchpoint for total accessibility.</p>
@@ -203,7 +203,100 @@
       </div>
     </div>
   </div>
-</section>
+  </section>
+
+  <!-- SETTINGS / ACCESSIBILITY PANEL -->
+  <section id="settings" class="settings-section">
+    <svg width="0" height="0" style="position:absolute; pointer-events: none;">
+      <defs>
+        <!-- Color blindness simulation filters (approximate) -->
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="tritanopia">
+          <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
+        </filter>
+      </defs>
+    </svg>
+
+    <div class="settings-panel" style="pointer-events: auto !important;">
+      <h2 class="settings-title">Accessibility & Display</h2>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Dark Mode</div>
+          <div class="setting-desc">Toggle between dark and light theme</div>
+        </div>
+        <div class="setting-control">
+          <label class="switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">UI Size</div>
+          <div class="setting-desc">Adjust interface scale for better visibility</div>
+        </div>
+        <div class="setting-control">
+          <select id="uiSizeSelect" aria-label="UI Size">
+            <option value="0.9">Small (90%)</option>
+            <option value="1" selected>Default (100%)</option>
+            <option value="1.1">Large (110%)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Font Size</div>
+          <div class="setting-desc">Increase text size for visual accessibility</div>
+        </div>
+        <div class="setting-control">
+          <select id="fontSizeSelect" aria-label="Font Size">
+            <option value="14">Small</option>
+            <option value="16" selected>Default</option>
+            <option value="18">Large</option>
+          </select>
+        </div>
+      </div>
+
+      <hr />
+
+      <h3 class="settings-subtitle">Accessibility</h3>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Color Blind Mode</div>
+          <div class="setting-desc">Adjust colors for different types of color blindness</div>
+        </div>
+        <div class="setting-control">
+          <select id="colorBlindSelect" aria-label="Color Blind Mode">
+            <option value="off">Off</option>
+            <option value="protanopia">Protanopia</option>
+            <option value="deuteranopia">Deuteranopia</option>
+            <option value="tritanopia">Tritanopia</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Voice Assistance</div>
+          <div class="setting-desc">Enable audio descriptions and voice navigation</div>
+        </div>
+        <div class="setting-control">
+          <button id="voiceToggle" class="btn-toggle" aria-pressed="false">Toggle</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
 <!-- FOOTER -->
 <footer id="support">

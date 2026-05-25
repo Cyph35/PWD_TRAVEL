@@ -926,14 +926,27 @@
 .settings-panel {
   position: fixed; top: 0; right: -480px; width: 440px; height: 100%;
   background: var(--bg2); border-left: 1px solid var(--border);
-  z-index: 800; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 99999; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
   display: flex; flex-direction: column;
   box-shadow: -8px 0 40px rgba(0,0,0,0.6); overflow: hidden;
+  pointer-events: auto !important;
 }
-.settings-panel.open { right: 0; }
+.settings-panel.open { right: 0; pointer-events: auto !important; }
 .settings-panel-header {
   padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  pointer-events: auto !important;
+}
+/* Force all interactive elements inside settings panel to be clickable */
+.settings-panel, .settings-panel * {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+.settings-panel select, .settings-panel input, .settings-panel button, .settings-panel label,
+.settings-panel .slider, .settings-panel .toggle-slider, .settings-panel .settings-toggle {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
 }
 .settings-panel-header h2 { font-size: 17px; font-weight: 800; color: var(--text); }
 .settings-close {
@@ -1021,22 +1034,22 @@
   transform: translateX(22px); background: #000;
 }
 .settings-toggle input:disabled + .toggle-slider {
-  opacity: 0.6; cursor: not-allowed;
+  opacity: 0.6; cursor: pointer !important; pointer-events: auto !important;
 }
 
-/* Select Dropdown */
 .settings-select {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 8px; padding: 8px 12px;
   color: var(--text2); font-size: 12px;
-  font-family: inherit; cursor: pointer;
+  font-family: inherit; cursor: pointer !important;
   min-width: 140px;
+  pointer-events: auto !important;
 }
 .settings-select:disabled {
-  opacity: 0.6; cursor: not-allowed;
+  opacity: 0.6; cursor: pointer !important; pointer-events: auto !important;
 }
 .settings-select option {
-  background: var(--bg2); color: var(--text);
+  background: var(--bg2); color: var(--text); cursor: pointer !important;
 }
 
 /* Log Out Section */
@@ -1063,10 +1076,108 @@
   letter-spacing: 0.05em;
 }
 
+/* ===== ADMIN PANEL ===== */
+.admin-panel {
+  position: fixed; top: 0; right: -520px; width: 480px; height: 100%;
+  background: var(--bg2); border-left: 1px solid var(--border);
+  z-index: 99998; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0,0,0,0.6); overflow: hidden;
+  pointer-events: auto !important;
+}
+.admin-panel.open { right: 0; pointer-events: auto !important; }
+.admin-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  pointer-events: auto !important;
+}
+.admin-header h2 { font-size: 17px; font-weight: 800; color: var(--text); margin: 0; display: flex; align-items: center; gap: 10px; }
+.admin-header h2 i { color: var(--accent); }
+.admin-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text2); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s; font-family: inherit;
+}
+.admin-close:hover { background: rgba(255,80,80,0.12); color: #ff6b6b; }
+.admin-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.admin-tabs {
+  display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto;
+}
+.admin-tab {
+  padding: 8px 14px; border: none; border-radius: 8px; background: transparent; color: var(--text2);
+  font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit;
+  display: flex; align-items: center; gap: 6px;
+}
+.admin-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.admin-tab.active { background: rgba(0,212,232,0.15); color: var(--accent); }
+.admin-tab-content {
+  display: none; flex: 1; overflow-y: auto; padding: 16px 20px;
+}
+.admin-tab-content.active { display: flex; flex-direction: column; }
+.admin-section-title { font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+.admin-list { display: flex; flex-direction: column; gap: 12px; }
+.admin-item {
+  display: flex; align-items: center; gap: 12px; padding: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  transition: all 0.2s; cursor: default;
+}
+.admin-item:hover { border-color: rgba(0,212,232,0.3); background: rgba(0,212,232,0.03); }
+.admin-item-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.admin-avatar {
+  width: 38px; height: 38px; border-radius: 8px;
+  background: linear-gradient(135deg,var(--accent),var(--accent2)); color: #000;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 12px; flex-shrink: 0;
+}
+.admin-avatar.large { width: 48px; height: 48px; font-size: 14px; }
+.admin-info { flex: 1; min-width: 0; }
+.admin-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.admin-detail { font-size: 11px; color: var(--text2); line-height: 1.4; margin-bottom: 3px; }
+.admin-detail.small { color: var(--text3); font-size: 10px; }
+.travel-status {
+  font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;
+  display: inline-block; margin-bottom: 8px;
+}
+.travel-status.in-progress { color: #ffa500; }
+.driver-status {
+  font-size: 9px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;
+  display: inline-block; margin-bottom: 8px; padding: 3px 8px; background: rgba(0,212,232,0.1); border-radius: 4px;
+}
+.driver-status.verified { background: rgba(0,200,100,0.1); color: #00c864; }
+.admin-actions {
+  display: flex; gap: 8px; flex-shrink: 0;
+}
+.btn-accept, .btn-deny, .btn-view {
+  padding: 6px 12px; border: none; border-radius: 6px; font-size: 11px;
+  font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.btn-accept {
+  background: rgba(0,200,100,0.2); color: #00c864;
+}
+.btn-accept:hover { background: rgba(0,200,100,0.35); }
+.btn-deny {
+  background: rgba(255,107,107,0.2); color: #ff6b6b;
+}
+.btn-deny:hover { background: rgba(255,107,107,0.35); }
+.btn-view {
+  background: rgba(0,212,232,0.2); color: var(--accent);
+}
+.btn-view:hover { background: rgba(0,212,232,0.35); }
+
+.booking-item { flex-direction: column; align-items: flex-start; }
+.booking-item .admin-actions { width: 100%; gap: 10px; }
+.booking-item .btn-accept, .booking-item .btn-deny { flex: 1; justify-content: center; }
+
+@media (max-width: 480px) {
+  .admin-panel { width: 100%; right: -100%; }
+}
+
 @media (max-width: 480px) {
   .settings-panel { width: 100%; right: -100%; }
 }
-
 
 
 /* ===== MOBILE: 480px and below ===== */
@@ -1125,8 +1236,30 @@
 
 
   </style>
+    <style>
+    /* Light theme overrides used by settings */
+    .light-theme { --bg: #f7f8fa; --bg2: #ffffff; --card: #ffffff; --text: #0b0d11; --text2: #475569; --text3: #6b7280; --border: rgba(11,13,17,0.06); }
+    .filter-protanopia { filter: url(#protanopia); }
+    .filter-deuteranopia { filter: url(#deuteranopia); }
+    .filter-tritanopia { filter: url(#tritanopia); }
+    </style>
 </head>
 <body>
+
+    <!-- Inline SVG filters for colorblind simulation -->
+    <svg width="0" height="0" style="position:absolute;">
+      <defs>
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="tritanopia">
+          <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
+        </filter>
+      </defs>
+    </svg>
 
 <div class="app">
   <!-- SIDEBAR -->
@@ -1143,6 +1276,7 @@
       <button class="nav-item" id="navExplore" onclick="openBooking()"><i class="fa-solid fa-calendar-check"></i><span class="nav-label">Book a Ride</span></button>
       <button class="nav-item" id="navWeather"><i class="fa-solid fa-cloud-sun"></i><span class="nav-label">Weather</span></button>
       <button class="nav-item"><i class="fa-solid fa-headset"></i><span class="nav-label">Support</span></button>
+      <button class="nav-item" id="navAdmin" onclick="openAdminPanel()"><i class="fa-solid fa-shield"></i><span class="nav-label">Admin</span></button>
       <button class="nav-item" id="navSettings" onclick="openSettingsPanel()"><i class="fa-solid fa-gear"></i><span class="nav-label">Settings</span></button>
     </nav>
     <div class="sidebar-bottom">
@@ -1195,7 +1329,7 @@
           </div>
         </div>
         <label class="settings-toggle">
-          <input type="checkbox" id="darkModeToggle" checked disabled>
+          <input type="checkbox" id="themeToggle">
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -1209,10 +1343,10 @@
             <div class="settings-item-desc">Adjust interface scale for better visibility</div>
           </div>
         </div>
-        <select class="settings-select" disabled>
-          <option>Default (100%)</option>
-          <option>Large (125%)</option>
-          <option>Extra Large (150%)</option>
+        <select class="settings-select" id="uiSizeSelect" aria-label="UI Size">
+          <option value="0.9">Small (90%)</option>
+          <option value="1" selected>Default (100%)</option>
+          <option value="1.1">Large (110%)</option>
         </select>
       </div>
 
@@ -1225,10 +1359,10 @@
             <div class="settings-item-desc">Increase text size for visual accessibility</div>
           </div>
         </div>
-        <select class="settings-select" disabled>
-          <option>Default</option>
-          <option>Large</option>
-          <option>Extra Large</option>
+        <select class="settings-select" id="fontSizeSelect" aria-label="Font Size">
+          <option value="14">Small</option>
+          <option value="16" selected>Default</option>
+          <option value="18">Large</option>
         </select>
       </div>
     </div>
@@ -1246,12 +1380,11 @@
             <div class="settings-item-desc">Adjust colors for different types of color blindness</div>
           </div>
         </div>
-        <select class="settings-select" disabled>
-          <option>Off</option>
-          <option>Protanopia (Red-Blind)</option>
-          <option>Deuteranopia (Green-Blind)</option>
-          <option>Tritanopia (Blue-Blind)</option>
-          <option>Achromatopsia (Total)</option>
+        <select class="settings-select" id="colorBlindSelect" aria-label="Color Blind Mode">
+          <option value="off" selected>Off</option>
+          <option value="protanopia">Protanopia</option>
+          <option value="deuteranopia">Deuteranopia</option>
+          <option value="tritanopia">Tritanopia</option>
         </select>
       </div>
 
@@ -1265,7 +1398,7 @@
           </div>
         </div>
         <label class="settings-toggle">
-          <input type="checkbox" disabled>
+          <input type="checkbox" id="voiceToggle">
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -1373,6 +1506,178 @@
 
   </div>
 </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-header">
+      <h2><i class="fa-solid fa-shield"></i> Admin Dashboard</h2>
+      <button class="admin-close" onclick="closeAdminPanel()">✕</button>
+    </div>
+    <div class="admin-body">
+      
+      <!-- TAB NAVIGATION -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="bookings"><i class="fa-solid fa-calendar"></i> Bookings</button>
+        <button class="admin-tab" data-tab="travels"><i class="fa-solid fa-map"></i> Active Travels</button>
+        <button class="admin-tab" data-tab="users"><i class="fa-solid fa-users"></i> Users</button>
+        <button class="admin-tab" data-tab="drivers"><i class="fa-solid fa-car"></i> Drivers</button>
+      </div>
+
+      <!-- BOOKINGS TAB -->
+      <div class="admin-tab-content active" data-tab="bookings">
+        <div class="admin-section-title">Pending Bookings</div>
+        <div class="admin-list">
+          <div class="admin-item booking-item">
+            <div class="admin-item-left">
+              <div class="admin-avatar">JD</div>
+              <div class="admin-info">
+                <div class="admin-name">John Doe</div>
+                <div class="admin-detail">📍 NYC → Boston | Mar 20, 2026</div>
+                <div class="admin-detail small">Driver: Sarah Chen | Accessible Van</div>
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-accept" onclick="acceptBooking(this)"><i class="fa-solid fa-check"></i> Accept</button>
+              <button class="btn-deny" onclick="denyBooking(this)"><i class="fa-solid fa-times"></i> Deny</button>
+            </div>
+          </div>
+
+          <div class="admin-item booking-item">
+            <div class="admin-item-left">
+              <div class="admin-avatar">MC</div>
+              <div class="admin-info">
+                <div class="admin-name">Maria Chen</div>
+                <div class="admin-detail">📍 LA → San Diego | Mar 21, 2026</div>
+                <div class="admin-detail small">Driver: James Wilson | Wheelchair Accessible</div>
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-accept" onclick="acceptBooking(this)"><i class="fa-solid fa-check"></i> Accept</button>
+              <button class="btn-deny" onclick="denyBooking(this)"><i class="fa-solid fa-times"></i> Deny</button>
+            </div>
+          </div>
+
+          <div class="admin-item booking-item">
+            <div class="admin-item-left">
+              <div class="admin-avatar">AR</div>
+              <div class="admin-info">
+                <div class="admin-name">Alex Rodriguez</div>
+                <div class="admin-detail">📍 Chicago → Milwaukee | Mar 22, 2026</div>
+                <div class="admin-detail small">Driver: Emma Thompson | Service Dog Friendly</div>
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-accept" onclick="acceptBooking(this)"><i class="fa-solid fa-check"></i> Accept</button>
+              <button class="btn-deny" onclick="denyBooking(this)"><i class="fa-solid fa-times"></i> Deny</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE TRAVELS TAB -->
+      <div class="admin-tab-content" data-tab="travels">
+        <div class="admin-section-title">Current Active Travels</div>
+        <div class="admin-list">
+          <div class="admin-item travel-item">
+            <div class="travel-status active">🟢 In Progress</div>
+            <div class="admin-item-left">
+              <div class="admin-info">
+                <div class="admin-name">Sarah Chen → Philadelphia</div>
+                <div class="admin-detail">Driver: Marcus Thorne | Started: 2 hrs ago</div>
+                <div class="admin-detail small">ETA: 1 hr 30 min | Route 95 North</div>
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-view"><i class="fa-solid fa-location-dot"></i> Track</button>
+            </div>
+          </div>
+
+          <div class="admin-item travel-item">
+            <div class="travel-status in-progress">🟡 Scheduled</div>
+            <div class="admin-item-left">
+              <div class="admin-info">
+                <div class="admin-name">Elena Rodriguez → Miami</div>
+                <div class="admin-detail">Driver: Jessica Lee | Departure: In 30 mins</div>
+                <div class="admin-detail small">Wheelchair Van | Fully Accessible</div>
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-view"><i class="fa-solid fa-phone"></i> Contact</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div class="admin-tab-content" data-tab="users">
+        <div class="admin-section-title">Registered Users</div>
+        <div class="admin-list">
+          <div class="admin-item user-item">
+            <div class="admin-avatar large">JD</div>
+            <div class="admin-info">
+              <div class="admin-name">John Doe</div>
+              <div class="admin-detail">john@email.com | Joined: Jan 2026</div>
+              <div class="admin-detail small">Status: Active | Wheelchair User</div>
+            </div>
+          </div>
+
+          <div class="admin-item user-item">
+            <div class="admin-avatar large">ER</div>
+            <div class="admin-info">
+              <div class="admin-name">Elena Rodriguez</div>
+              <div class="admin-detail">elena@email.com | Joined: Feb 2026</div>
+              <div class="admin-detail small">Status: Active | Service Dog Owner</div>
+            </div>
+          </div>
+
+          <div class="admin-item user-item">
+            <div class="admin-avatar large">SC</div>
+            <div class="admin-info">
+              <div class="admin-name">Sarah Chen</div>
+              <div class="admin-detail">sarah@email.com | Joined: Jan 2026</div>
+              <div class="admin-detail small">Status: Active | Visually Impaired</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DRIVERS TAB -->
+      <div class="admin-tab-content" data-tab="drivers">
+        <div class="admin-section-title">Verified Drivers</div>
+        <div class="admin-list">
+          <div class="admin-item driver-item">
+            <div class="driver-status verified">✓ Verified</div>
+            <div class="admin-avatar large">MT</div>
+            <div class="admin-info">
+              <div class="admin-name">Marcus Thorne</div>
+              <div class="admin-detail">marcus@driver.com | Rating: 4.9/5 ⭐</div>
+              <div class="admin-detail small">Accessible Van | Certifications: Wheelchair, Service Dog</div>
+            </div>
+          </div>
+
+          <div class="admin-item driver-item">
+            <div class="driver-status verified">✓ Verified</div>
+            <div class="admin-avatar large">JL</div>
+            <div class="admin-info">
+              <div class="admin-name">Jessica Lee</div>
+              <div class="admin-detail">jessica@driver.com | Rating: 4.8/5 ⭐</div>
+              <div class="admin-detail small">Wheelchair Van | Certifications: Wheelchair, Medical</div>
+            </div>
+          </div>
+
+          <div class="admin-item driver-item">
+            <div class="driver-status verified">✓ Verified</div>
+            <div class="admin-avatar large">ET</div>
+            <div class="admin-info">
+              <div class="admin-name">Emma Thompson</div>
+              <div class="admin-detail">emma@driver.com | Rating: 4.7/5 ⭐</div>
+              <div class="admin-detail small">Standard + Accessible | Certifications: All Types</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MAP -->
   <div class="map-area">
@@ -1842,7 +2147,7 @@
       });
   }
   function closeAllPanels() {
-    ['historyPanel', 'weatherPanel', 'settingsPanel'].forEach(function(id) {
+    ['historyPanel', 'weatherPanel', 'settingsPanel', 'adminPanel'].forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.classList.remove('open');
     });
@@ -3011,6 +3316,65 @@ document.addEventListener('click', function(e) {
   }
 });
 
+/* ===== ADMIN PANEL FUNCTIONS ===== */
+function openAdminPanel() {
+  closeAllPanels();
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel) adminPanel.classList.add('open');
+}
+
+function closeAdminPanel() {
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel) adminPanel.classList.remove('open');
+}
+
+// Admin tab switching
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.admin-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.admin-tab-content').forEach(function(c) { c.classList.remove('active'); });
+      tab.classList.add('active');
+      const content = document.querySelector('[data-tab="' + tabName + '"].admin-tab-content');
+      if (content) content.classList.add('active');
+    });
+  });
+});
+
+// Admin booking actions
+window.acceptBooking = function(btn) {
+  const item = btn.closest('.admin-item');
+  if (item) {
+    item.style.opacity = '0.6';
+    btn.disabled = true;
+    btn.textContent = '✓ Accepted';
+    btn.nextElementSibling.disabled = true;
+    btn.nextElementSibling.style.opacity = '0.5';
+    setTimeout(function() {
+      item.style.transform = 'translateY(-10px)';
+      item.style.opacity = '0';
+      setTimeout(function() { item.remove(); }, 300);
+    }, 1500);
+  }
+};
+
+window.denyBooking = function(btn) {
+  const item = btn.closest('.admin-item');
+  if (item) {
+    item.style.opacity = '0.6';
+    btn.disabled = true;
+    btn.textContent = '✗ Denied';
+    btn.previousElementSibling.disabled = true;
+    btn.previousElementSibling.style.opacity = '0.5';
+    setTimeout(function() {
+      item.style.transform = 'translateY(-10px)';
+      item.style.opacity = '0';
+      setTimeout(function() { item.remove(); }, 300);
+    }, 1500);
+  }
+};
+
 /* ===== CALL SCREEN ===== */
 var callInterval = null, callSecs = 0, isMuted = false, isSpeaker = false;
 
@@ -3592,5 +3956,6 @@ function appendDriverMsg(txt) {
 
 
 
+<script src="main.js"></script>
 </body>
 </html>

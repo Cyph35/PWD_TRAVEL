@@ -118,8 +118,28 @@
     .vm-pend{background:rgba(0,212,232,.1);border:1px solid rgba(0,212,232,.3)!important;color:var(--accent);}
     .vm-no{background:transparent;border:1px solid var(--border)!important;color:var(--text2);}
   </style>
+    <style>
+    .light-theme { --bg: #f7f8fa; --bg2: #ffffff; --card: #ffffff; --text: #0b0d11; --text2: #475569; --text3: #6b7280; --border: rgba(11,13,17,0.06); }
+    .filter-protanopia { filter: url(#protanopia); }
+    .filter-deuteranopia { filter: url(#deuteranopia); }
+    .filter-tritanopia { filter: url(#tritanopia); }
+    </style>
 </head>
 <body>
+
+    <svg width="0" height="0" style="position:absolute;">
+      <defs>
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+        </filter>
+        <filter id="tritanopia">
+          <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
+        </filter>
+      </defs>
+    </svg>
 <div class="app">
 
   <!-- SIDEBAR -->
@@ -156,9 +176,10 @@
       <a class="pg-back" href="home.html" title="Back to Map"><i class="fa-solid fa-arrow-left"></i></a>
       <div>
         <div class="pg-title">My Profile</div>
-        <div class="pg-sub">Manage your personal info, disability details &amp; emergency contacts</div>
-      </div>
-    </div>
+
+      <script src="main.js"></script>
+      </body>
+      </html>
 
     <!-- Warning bar -->
     <div class="warn-bar" id="warnBar">
